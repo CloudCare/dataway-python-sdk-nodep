@@ -223,7 +223,7 @@ routes_config:
 
 # 声明
 
-我们从 [six](https://github.com/benjaminp/six) 摘录了部分代码，主要用于实现 Python 2.x/3.x 的兼容实现。
+我们从 [six](https://github.com/benjaminp/six) 摘录了部分代码，主要用于实现 Python 2.x/3.x 兼容。
 
 # 许可协议
 
