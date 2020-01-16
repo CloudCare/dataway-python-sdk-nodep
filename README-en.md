@@ -192,8 +192,8 @@ Write a flow
 | `duration`    | `int`/`long`         | Alternative |               | duration of the flow on the node (second)                                                                    |
 | `duration_ms` | `int`/`long`         | Alternative |               | duration of the flow on the node (millisecond)                                                               |
 | `parent`      | `str`                | Optional    | `None`        | previous node name. The first node do not have one                                                           |
-| `tags`        | `dict`               | Optional    | `None`        | extra ags. Both key and value should be a string                                                             |
-| `fields`      | `dict`               | Optional    | `None`        | extra ields. Key should be a string, value should be a string/integer/float/boolean value                    |
+| `tags`        | `dict`               | Optional    | `None`        | extra tags. Both key and value should be a string                                                            |
+| `fields`      | `dict`               | Optional    | `None`        | extra fields. Key should be a string, value should be a string/integer/float/boolean value                   |
 
 either `duration` or `duration_ms` should be spcified.
 
@@ -218,8 +218,12 @@ Write many flows
 | `flows[#]["duration"]`    | `int`/`long`         | Required二选一 |               | duration of the flow on the node (second)                                                                    |
 | `flows[#]["duration_ms"]` | `int`/`long`         | Required二选一 |               | duration of the flow on the node (millisecond)                                                               |
 | `flows[#]["parent"]`      | `str`                | Optional       | `None`        | previous node name. The first node do not have one                                                           |
-| `flows[#]["tags"]`        | `dict`               | Optional       | `None`        | extra ags. Both key and value should be a string                                                             |
-| `flows[#]["fields"]`      | `dict`               | Optional       | `None`        | extra ields. Key should be a string, value should be a string/integer/float/boolean value                    |
+| `flows[#]["tags"]`        | `dict`               | Optional       | `None`        | extra tags. Both key and value should be a string                                                            |
+| `flows[#]["fields"]`      | `dict`               | Optional       | `None`        | extra fields. Key should be a string, value should be a string/integer/float/boolean value                   |
+
+# Announcement
+
+We picked some code from [six](https://github.com/benjaminp/six) for Python 2.x/3.x compatibility purpose.
 
 # License
 

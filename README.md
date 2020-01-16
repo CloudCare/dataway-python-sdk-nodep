@@ -221,6 +221,10 @@ routes_config:
 | `flows[#]["tags"]`        | `dict`               | 可选       | `None` | 额外标签。键名和键值必须都为字符串                                  |
 | `flows[#]["fields"]`      | `dict`               | 可选       | `None` | 额外指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
 
+# 声明
+
+我们从 [six](https://github.com/benjaminp/six) 摘录了部分代码，主要用于实现 Python 2.x/3.x 的兼容实现。
+
 # 许可协议
 
 [Apache License Version 2.0](LICENSE)

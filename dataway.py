@@ -289,6 +289,8 @@ class Dataway(object):
         lines = []
 
         for p in points:
+            # Influx DB line protocol
+            # https://docs.influxdata.com/influxdb/v1.7/write_protocols/line_protocol_tutorial/
             measurement = p.get('measurement')
             measurement = re.sub(RE_ESCAPE_MEASUREMENT, ESCAPE_REPLACER, measurement)
 
