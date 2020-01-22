@@ -28,7 +28,9 @@ A DataFlux Dataway SDK for Python.
 
 ## Installation
 
-No need to `pip`/`easy_install`, just copy the only file `dataway.py` to your project and import it.
+No need to `pip`/`easy_install`, just copy the only file `dataway.py` to your project and `import` it.
+
+See [example.py](example.py)
 
 ## Quick Example
 
@@ -38,10 +40,10 @@ from dataway import Dataway
 dw = Dataway()
 
 # Write a point
-dataway.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
+dw.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
 
 # Write many points
-dataway.write_points([
+dw.write_points([
     {
         'measurement': 'M1',
         'tags'       : {'T1': 'X', 'T2': 'Y'},
@@ -195,7 +197,7 @@ Write a flow
 | `tags`        | `dict`               | Optional    | `None`        | extra tags. Both key and value should be a string                                                            |
 | `fields`      | `dict`               | Optional    | `None`        | extra fields. Key should be a string, value should be a string/integer/float/boolean value                   |
 
-either `duration` or `duration_ms` should be spcified.
+Either `duration` or `duration_ms` should be spcified.
 
 
 
@@ -207,24 +209,24 @@ either `duration` or `duration_ms` should be spcified.
 
 Write many flows
 
-|         Parameter         |         Type         |    Required    | Default Value |                                                 Description                                                  |
-|---------------------------|----------------------|----------------|---------------|--------------------------------------------------------------------------------------------------------------|
-| `flows`                   | `list`               | Required       |               | flow list                                                                                                    |
-| `flows[#]`                | `dict`               | Required       |               | flow data                                                                                                    |
-| `flows[#]["trace_id"]`    | `str`                | Required       |               | flow trace ID                                                                                                |
-| `flows[#]["name"]`        | `str`                | Required       |               | node name                                                                                                    |
-| `flows[#]["type_"]`       | `str`                | Required       |               | node type                                                                                                    |
-| `flows[#]["timestamp"]`   | `int`/`long`/`float` | Required       |               | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
-| `flows[#]["duration"]`    | `int`/`long`         | Required二选一 |               | duration of the flow on the node (second)                                                                    |
-| `flows[#]["duration_ms"]` | `int`/`long`         | Required二选一 |               | duration of the flow on the node (millisecond)                                                               |
-| `flows[#]["parent"]`      | `str`                | Optional       | `None`        | previous node name. The first node do not have one                                                           |
-| `flows[#]["tags"]`        | `dict`               | Optional       | `None`        | extra tags. Both key and value should be a string                                                            |
-| `flows[#]["fields"]`      | `dict`               | Optional       | `None`        | extra fields. Key should be a string, value should be a string/integer/float/boolean value                   |
+|         Parameter         |         Type         |   Required  | Default Value |                                                 Description                                                  |
+|---------------------------|----------------------|-------------|---------------|--------------------------------------------------------------------------------------------------------------|
+| `flows`                   | `list`               | Required    |               | flow list                                                                                                    |
+| `flows[#]`                | `dict`               | Required    |               | flow data                                                                                                    |
+| `flows[#]["trace_id"]`    | `str`                | Required    |               | flow trace ID                                                                                                |
+| `flows[#]["name"]`        | `str`                | Required    |               | node name                                                                                                    |
+| `flows[#]["type_"]`       | `str`                | Required    |               | node type                                                                                                    |
+| `flows[#]["timestamp"]`   | `int`/`long`/`float` | Required    |               | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
+| `flows[#]["duration"]`    | `int`/`long`         | Alternative |               | duration of the flow on the node (second)                                                                    |
+| `flows[#]["duration_ms"]` | `int`/`long`         | Alternative |               | duration of the flow on the node (millisecond)                                                               |
+| `flows[#]["parent"]`      | `str`                | Optional    | `None`        | previous node name. The first node do not have one                                                           |
+| `flows[#]["tags"]`        | `dict`               | Optional    | `None`        | extra tags. Both key and value should be a string                                                            |
+| `flows[#]["fields"]`      | `dict`               | Optional    | `None`        | extra fields. Key should be a string, value should be a string/integer/float/boolean value                   |
 
-# Announcement
+## Announcement
 
-We picked some code from [six](https://github.com/benjaminp/six) for Python 2.x/3.x compatibility purpose.
+We picked some code from [six](https://github.com/benjaminp/six) for Python 2.x/3.x compatibility.
 
-# License
+## License
 
 [Apache License Version 2.0](LICENSE)

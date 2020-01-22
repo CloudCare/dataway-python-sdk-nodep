@@ -16,19 +16,21 @@ Python 版 DataFlux Dataway SDK。
     - 微秒（1/1000,000 秒）
     - 纳秒（1/1000,000,000 秒）
 
-3. 关键事件（`Keyevent`）/流程行为（`FLow`）支持.
+3. 关键事件（`Keyevent`）/流程行为（`FLow`）支持。
 
-4. Dataway 认证支持.
+4. Dataway 认证支持。
 
-5. HTTP/HTTPS 支持.
+5. HTTP/HTTPS 支持。
 
-6. 单文件即可使用.
+6. 单文件即可使用。
 
-7. 无第三方包依赖.
+7. 无第三方包依赖。
 
 ## 安装
 
 无需通过 `pip`/`easy_install`，只要拷贝文件`dataway.py`到项目中，引用即可使用。
+
+见 [example.py](example.py)
 
 ## 简单示例
 
@@ -38,10 +40,10 @@ from dataway import Dataway
 dw = Dataway()
 
 # 写入一个数据点
-dataway.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
+dw.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
 
 # 写入多个数据点
-dataway.write_points([
+dw.write_points([
     {
         'measurement': 'M1',
         'tags'       : {'T1': 'X', 'T2': 'Y'},
@@ -221,10 +223,10 @@ routes_config:
 | `flows[#]["tags"]`        | `dict`               | 可选       | `None` | 额外标签。键名和键值必须都为字符串                                  |
 | `flows[#]["fields"]`      | `dict`               | 可选       | `None` | 额外指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
 
-# 声明
+## 声明
 
 我们从 [six](https://github.com/benjaminp/six) 摘录了部分代码，主要用于实现 Python 2.x/3.x 兼容。
 
-# 许可协议
+## 许可协议
 
 [Apache License Version 2.0](LICENSE)
