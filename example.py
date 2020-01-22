@@ -8,14 +8,14 @@ def print_sep(title):
     print('{0} [{1}] {2}'.format(line, title, line))
 
 def main():
-    dataway = Dataway(debug=True, access_key='x', secret_key='x')
+    dw = Dataway(debug=True)
 
     points = [
         {
             'measurement': 'M1',
-            'tags'       : {'T1': 'X', 'T2': 'Y'},
-            'fields'     : {'F1': 'A', 'F2': 42, 'F3': 4.2, 'F4': True, 'F5': False},
-            'timestamp'  : 1577808000,
+            'tags'       : {'T1': 'X', 'T2': 'Y', 'T3': ''},
+            'fields'     : {'F1': 'A', 'F2': 42, 'F3': 4.2, 'F4': True, 'F5': False, 'F6': '', 'F7': None},
+            'timestamp'  : 1577808000000000001,
         },
         {
             'measurement': 'M1',
@@ -35,11 +35,11 @@ def main():
         },
     ]
 
-    print_sep('dataway.write_point()')
-    dataway.write_point(**points[0])
+    print_sep('Dataway.write_point()')
+    dw.write_point(**points[0])
 
-    print_sep('dataway.write_points()')
-    dataway.write_points(points)
+    print_sep('Dataway.write_points()')
+    dw.write_points(points)
 
 if __name__ == '__main__':
     main()

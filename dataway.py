@@ -83,9 +83,9 @@ else:
     from urlparse import urlparse, urlsplit
     long_type = long
 
-TIMESTAMP_OF_20200101_000000 = 1577808000
+MIN_ALLOWED_NS_TIMESTAMP = 1000000000000000000
 
-ESCAPE_REPLACER = r'\\\1'
+ESCAPE_REPLACER           = r'\\\1'
 RE_ESCAPE_TAG_KEY         = re.compile('([,= ])')
 RE_ESCAPE_TAG_VALUE       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_FIELD_KEY       = RE_ESCAPE_TAG_KEY
@@ -119,7 +119,6 @@ class Dataway(object):
                 if len(host_port_parts) >= 2:
                     self.port = int(host_port_parts[1])
 
-
             if splited_url.scheme:
                 self.protocol = splited_url.scheme
 
@@ -129,10 +128,11 @@ class Dataway(object):
     def _convert_to_ns(self, timestamp):
         timestamp = long_type(timestamp)
 
-        min_ns = TIMESTAMP_OF_20200101_000000 * 1E9
         for i in range(3):
-            if timestamp < min_ns:
+            if timestamp < MIN_ALLOWED_NS_TIMESTAMP:
                 timestamp *= 1000
+            else:
+                break
 
         return timestamp
 
@@ -174,7 +174,7 @@ class Dataway(object):
         }
         return point
 
-    def _prepare_keyevnet(self, keyevent):
+    def _prepare_keyevent(self, keyevent):
         if not isinstance(keyevent, (dict, OrderedDict)):
             raise Exception('`keyevent` should be a dict or OrderedDict, got {0}'.format(type(keyevent).__name__))
 
@@ -187,9 +187,9 @@ class Dataway(object):
         else:
             tags['$source'] = source
 
+        # Check Fields
         fields = {}
 
-        # Check Fields
         title = keyevent.get('title')
         if not isinstance(title, string_types):
             raise Exception('`title` should be a str or unicode, got {0}'.format(type(title).__name__))
@@ -254,18 +254,19 @@ class Dataway(object):
         else:
             tags['$parent'] = parent
 
+        # Check Fields
         fields = flow.get('fields') or {}
 
-        # Check Fields
         duration_ms = flow.get('duration_ms')
-        if duration_ms is not None and  not isinstance(duration_ms, integer_types):
+        if duration_ms is not None and not isinstance(duration_ms, integer_types):
             raise Exception('`duration_ms` should be an integer or long, got {0}'.format(type(duration_ms).__name__))
 
         duration = flow.get('duration')
-        if duration is not None and  not isinstance(duration, integer_types):
+        if duration is not None and not isinstance(duration, integer_types):
             raise Exception('`duration` should be an integer or long, got {0}'.format(type(duration).__name__))
-        else:
-            # to ms
+
+        # to ms
+        if duration:
             duration = duration * 1000
 
         if duration_ms is None and duration is None:
@@ -299,6 +300,8 @@ class Dataway(object):
                 key_list = sorted(tags.keys())
                 for k in key_list:
                     v = tags[k]
+                    if not v:
+                        continue
 
                     k = re.sub(RE_ESCAPE_TAG_KEY, ESCAPE_REPLACER, k)
                     v = re.sub(RE_ESCAPE_TAG_VALUE, ESCAPE_REPLACER, v)
@@ -315,15 +318,20 @@ class Dataway(object):
                 key_list = sorted(fields.keys())
                 for k in key_list:
                     v = fields[k]
+                    if not v:
+                        continue
 
                     k = re.sub(RE_ESCAPE_FIELD_KEY, ESCAPE_REPLACER, k)
                     if isinstance(v, string_types):
                         v = re.sub(RE_ESCAPE_FIELD_STR_VALUE, ESCAPE_REPLACER, v)
                         v = '"{0}"'.format(v)
+
                     elif isinstance(v, bool):
                         v = '{0}'.format(v).lower()
+
                     elif isinstance(v, integer_types):
                         v = '{0}i'.format(v)
+
                     else:
                         v = '{0}'.format(v)
 
@@ -447,7 +455,7 @@ class Dataway(object):
             'tags'     : tags,
             'timestamp': timestamp,
         }
-        prepared_point = self._prepare_keyevnet(keyevent)
+        prepared_point = self._prepare_keyevent(keyevent)
         self._send_points(prepared_point)
 
     def write_keyevents(self, keyevents):
@@ -456,7 +464,7 @@ class Dataway(object):
 
         prepared_points = []
         for p in keyevents:
-            prepared_points.append(self._prepare_keyevnet(p))
+            prepared_points.append(self._prepare_keyevent(p))
 
         self._send_points(prepared_points)
 
