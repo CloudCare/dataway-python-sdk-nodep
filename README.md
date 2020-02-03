@@ -181,15 +181,15 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_flow(trace_id, name, type_, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
+###### *method* `Dataway.write_flow(app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
 
 写入流程行为
 
 |      参数     |         类型         |  是否必须  | 默认值 |                                 说明                                |
 |---------------|----------------------|------------|--------|---------------------------------------------------------------------|
+| `app`         | `str`                | 必须       |        | 应用名                                                              |
 | `trace_id`    | `str`                | 必须       |        | 标示一个流程单的唯一ID                                              |
 | `name`        | `str`                | 必须       |        | 节点名称                                                            |
-| `type_`       | `str`                | 必须       |        | 类型                                                                |
 | `timestamp`   | `int`/`long`/`float` | 必须       |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒            |
 | `duration`    | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（秒）                                  |
 | `duration_ms` | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（毫秒）                                |
@@ -213,9 +213,9 @@ routes_config:
 |---------------------------|----------------------|------------|--------|---------------------------------------------------------------------|
 | `flows`                   | `list`               | 必须       |        | 流程行为列表                                                        |
 | `flows[#]`                | `dict`               | 必须       |        | 流程行为                                                            |
+| `flows[#]["app"]`         | `str`                | 必须       |        | 应用名                                                              |
 | `flows[#]["trace_id"]`    | `str`                | 必须       |        | 标示一个流程单的唯一ID                                              |
 | `flows[#]["name"]`        | `str`                | 必须       |        | 节点名称                                                            |
-| `flows[#]["type_"]`       | `str`                | 必须       |        | 类型                                                                |
 | `flows[#]["timestamp"]`   | `int`/`long`/`float` | 必须       |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒            |
 | `flows[#]["duration"]`    | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（秒）                                  |
 | `flows[#]["duration_ms"]` | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（毫秒）                                |

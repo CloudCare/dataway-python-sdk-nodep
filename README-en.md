@@ -181,15 +181,15 @@ Write many key events
 
 
 
-###### *method* `Dataway.write_flow(trace_id, name, type_, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
+###### *method* `Dataway.write_flow(app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
 
 Write a flow
 
 |   Parameter   |         Type         |   Required  | Default Value |                                                 Description                                                  |
 |---------------|----------------------|-------------|---------------|--------------------------------------------------------------------------------------------------------------|
+| `app`         | `str`                | Required    |               | app name                                                                                                     |
 | `trace_id`    | `str`                | Required    |               | flow trace ID                                                                                                |
 | `name`        | `str`                | Required    |               | node name                                                                                                    |
-| `type_`       | `str`                | Required    |               | node type                                                                                                    |
 | `timestamp`   | `int`/`long`/`float` | Required    |               | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
 | `duration`    | `int`/`long`         | Alternative |               | duration of the flow on the node (second)                                                                    |
 | `duration_ms` | `int`/`long`         | Alternative |               | duration of the flow on the node (millisecond)                                                               |
@@ -213,9 +213,9 @@ Write many flows
 |---------------------------|----------------------|-------------|---------------|--------------------------------------------------------------------------------------------------------------|
 | `flows`                   | `list`               | Required    |               | flow list                                                                                                    |
 | `flows[#]`                | `dict`               | Required    |               | flow data                                                                                                    |
+| `flows[#]["app"]`         | `str`                | Required    |               | app name                                                                                                     |
 | `flows[#]["trace_id"]`    | `str`                | Required    |               | flow trace ID                                                                                                |
 | `flows[#]["name"]`        | `str`                | Required    |               | node name                                                                                                    |
-| `flows[#]["type_"]`       | `str`                | Required    |               | node type                                                                                                    |
 | `flows[#]["timestamp"]`   | `int`/`long`/`float` | Required    |               | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
 | `flows[#]["duration"]`    | `int`/`long`         | Alternative |               | duration of the flow on the node (second)                                                                    |
 | `flows[#]["duration_ms"]` | `int`/`long`         | Alternative |               | duration of the flow on the node (millisecond)                                                               |

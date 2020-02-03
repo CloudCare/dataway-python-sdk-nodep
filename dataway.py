@@ -154,12 +154,14 @@ class Dataway(object):
                     raise Exception('`tags` value should be a str or unicode, got tags["{0}"] = {1}, {2}'.format(k, v, type(v).__name__))
 
         fields = point.get('fields')
-        if fields is not None and not isinstance(fields, (dict, OrderedDict)):
-            raise Exception('`fields` should be a dict or OrderedDict, got {0}'.format(type(fields).__name__))
+        if fields is not None:
+            if not isinstance(fields, (dict, OrderedDict)):
+                raise Exception('`fields` should be a dict or OrderedDict, got {0}'.format(type(fields).__name__))
 
         timestamp = point.get('timestamp')
-        if timestamp is not None and not isinstance(timestamp, (integer_types, float)):
-            raise Exception('`timestamp` should be an int, long or float, got {0}'.format(type(timestamp).__name__))
+        if timestamp is not None:
+            if not isinstance(timestamp, (integer_types, float)):
+                raise Exception('`timestamp` should be an int, long or float, got {0}'.format(type(timestamp).__name__))
 
         if timestamp is None:
             timestamp = time.time()
@@ -168,7 +170,7 @@ class Dataway(object):
 
         point = {
             'measurement': measurement,
-            'tags'       : tags or None,
+            'tags'       : tags   or None,
             'fields'     : fields or None,
             'timestamp'  : timestamp,
         }
@@ -182,10 +184,11 @@ class Dataway(object):
         tags = keyevent.get('tags') or {}
 
         source = keyevent.get('source')
-        if source is not None and not isinstance(source, string_types):
-            raise Exception('`source` should be a str or unicode, got {0}'.format(type(source).__name__))
-        else:
-            tags['$source'] = source
+        if source is not None:
+            if not isinstance(source, string_types):
+                raise Exception('`source` should be a str or unicode, got {0}'.format(type(source).__name__))
+            else:
+                tags['$source'] = source
 
         # Check Fields
         fields = {}
@@ -197,10 +200,11 @@ class Dataway(object):
             fields['$title'] = title
 
         des = keyevent.get('des')
-        if des is not None and not isinstance(des, string_types):
-            raise Exception('`des` should be a str or unicode, got {0}'.format(type(des).__name__))
-        else:
-            fields['$des'] = des
+        if des is not None:
+            if not isinstance(des, string_types):
+                raise Exception('`des` should be a str or unicode, got {0}'.format(type(des).__name__))
+            else:
+                fields['$des'] = des
 
         link = keyevent.get('link')
         if link is not None:
@@ -208,7 +212,7 @@ class Dataway(object):
                 raise Exception('`link` should be a str or unicode, got {0}'.format(type(link).__name__))
 
             elif not link.lower().startswith('http://') \
-                    or not link.lower().startswith('https://') \
+                    and not link.lower().startswith('https://') \
                     or link.endswith('://'):
                 raise Exception('`link` should be a valid URL with protocol, got {0}'.format(link))
 
@@ -242,28 +246,25 @@ class Dataway(object):
         else:
             tags['$name'] = name
 
-        type_ = flow.get('type')
-        if not isinstance(type_, string_types):
-            raise Exception('`type` should be a str or unicode, got {0}'.format(type(type_).__name__))
-        else:
-            tags['$type'] = type_
-
         parent = flow.get('parent')
-        if parent is not None and not isinstance(parent, string_types):
-            raise Exception('`parent` should be a str or unicode, got {0}'.format(type(parent).__name__))
-        else:
-            tags['$parent'] = parent
+        if parent is not None:
+            if not isinstance(parent, string_types):
+                raise Exception('`parent` should be a str or unicode, got {0}'.format(type(parent).__name__))
+            else:
+                tags['$parent'] = parent
 
         # Check Fields
         fields = flow.get('fields') or {}
 
         duration_ms = flow.get('duration_ms')
-        if duration_ms is not None and not isinstance(duration_ms, integer_types):
-            raise Exception('`duration_ms` should be an integer or long, got {0}'.format(type(duration_ms).__name__))
+        if duration_ms is not None:
+            if not isinstance(duration_ms, integer_types):
+                raise Exception('`duration_ms` should be an integer or long, got {0}'.format(type(duration_ms).__name__))
 
         duration = flow.get('duration')
-        if duration is not None and not isinstance(duration, integer_types):
-            raise Exception('`duration` should be an integer or long, got {0}'.format(type(duration).__name__))
+        if duration is not None:
+            if not isinstance(duration, integer_types):
+                raise Exception('`duration` should be an integer or long, got {0}'.format(type(duration).__name__))
 
         # to ms
         if duration:
@@ -275,7 +276,7 @@ class Dataway(object):
         fields['$duration'] = duration_ms or duration
 
         point = {
-            'measurement': '$flow',
+            'measurement': '$flow_{}'.format(flow.get('app')),
             'tags'       : tags,
             'fields'     : fields,
             'timestamp'  : flow.get('timestamp'),
@@ -468,11 +469,11 @@ class Dataway(object):
 
         self._send_points(prepared_points)
 
-    def write_flow(self, trace_id, name, type_, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None):
+    def write_flow(self, app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None):
         flow = {
+            'app'        : app,
             'trace_id'   : trace_id,
             'name'       : name,
-            'type'       : type_,
             'duration'   : duration,
             'duration_ms': duration_ms,
             'parent'     : parent,

@@ -41,5 +41,52 @@ def main():
     print_sep('Dataway.write_points()')
     dw.write_points(points)
 
+    keyevents = [
+        {
+            'title'    : 'T1',
+            'des'      : 'D1',
+            'link'     : 'http://link',
+            'source'   : 'S1',
+            'tags'     : {'T1': 'X'},
+            'timestamp': 1577808000,
+        },
+        {
+            'title'    : 'T1',
+            'timestamp': 1577808001,
+        },
+    ]
+
+    print_sep('Dataway.write_keyevent()')
+    dw.write_keyevent(**keyevents[0])
+
+    print_sep('Dataway.write_keyevents()')
+    dw.write_keyevents(keyevents)
+
+    flows = [
+        {
+            'app'      : 'A1',
+            'trace_id' : 'TRACE-001',
+            'name'     : 'N1',
+            'duration' : 10,
+            'parent'   : 'P1',
+            'tags'     : {'T1': 'X'},
+            'fields'   : {'F1': 'A'},
+            'timestamp': 1577808000,
+        },
+        {
+            'app'        : 'A1',
+            'trace_id'   : 'TRACE-001',
+            'name'       : 'N1',
+            'duration_ms': 10000,
+            'timestamp'  : 1577808001,
+        },
+    ]
+
+    print_sep('Dataway.write_flow()')
+    dw.write_flow(**flows[0])
+
+    print_sep('Dataway.write_flows()')
+    dw.write_flows(flows)
+
 if __name__ == '__main__':
     main()
