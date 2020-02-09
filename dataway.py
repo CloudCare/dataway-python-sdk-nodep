@@ -276,7 +276,7 @@ class Dataway(object):
         fields['$duration'] = duration_ms or duration
 
         point = {
-            'measurement': '$flow_{}'.format(flow.get('app')),
+            'measurement': '$flow_{0}'.format(flow.get('app')),
             'tags'       : tags,
             'fields'     : fields,
             'timestamp'  : flow.get('timestamp'),
@@ -346,6 +346,7 @@ class Dataway(object):
             lines.append('{0}{1}{2}{3}'.format(measurement, tag_set, field_set, timestamp))
 
         body = '\n'.join(lines)
+        body = ensure_binary(body)
 
         return body
 
@@ -435,7 +436,7 @@ class Dataway(object):
         }
         prepared_point = self._preapre_point(point)
 
-        self._send_points(prepared_point)
+        return self._send_points(prepared_point)
 
     def write_points(self, points):
         if not isinstance(points, (list, tuple)):
@@ -445,7 +446,7 @@ class Dataway(object):
         for p in points:
             prepared_points.append(self._preapre_point(p))
 
-        self._send_points(prepared_points)
+        return self._send_points(prepared_points)
 
     def write_keyevent(self, title, timestamp, des=None, link=None, source=None, tags=None):
         keyevent = {
@@ -457,7 +458,7 @@ class Dataway(object):
             'timestamp': timestamp,
         }
         prepared_point = self._prepare_keyevent(keyevent)
-        self._send_points(prepared_point)
+        return self._send_points(prepared_point)
 
     def write_keyevents(self, keyevents):
         if not isinstance(keyevents, (list, tuple)):
@@ -467,7 +468,7 @@ class Dataway(object):
         for p in keyevents:
             prepared_points.append(self._prepare_keyevent(p))
 
-        self._send_points(prepared_points)
+        return self._send_points(prepared_points)
 
     def write_flow(self, app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None):
         flow = {
@@ -482,7 +483,7 @@ class Dataway(object):
             'timestamp'  : timestamp,
         }
         prepared_point = self._prepare_flow(flow)
-        self._send_points(prepared_point)
+        return self._send_points(prepared_point)
 
     def write_flows(self, flows):
         if not isinstance(flows, (list, tuple)):
@@ -492,4 +493,4 @@ class Dataway(object):
         for p in flows:
             prepared_points.append(self._prepare_flow(p))
 
-        self._send_points(prepared_points)
+        return self._send_points(prepared_points)

@@ -33,6 +33,11 @@ def main():
             'measurement': 'M1',
             'fields'     : {'F1': 'A'},
         },
+        {
+            'measurement': '中文指标名',
+            'tags'       : {'中文标签': '中文标签值'},
+            'fields'     : {'中文字段': '中文字段值'},
+        },
     ]
 
     print_sep('Dataway.write_point()')
