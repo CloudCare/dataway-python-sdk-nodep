@@ -315,7 +315,7 @@ class Dataway(object):
                     k = re.sub(RE_ESCAPE_TAG_KEY, ESCAPE_REPLACER, k)
                     v = re.sub(RE_ESCAPE_TAG_VALUE, ESCAPE_REPLACER, v)
 
-                    tag_set_list.append('{0}={1}'.format(k, v))
+                    tag_set_list.append('{0}={1}'.format(ensure_str(k), ensure_str(v)))
 
             tag_set = ''
             if len(tag_set_list) > 0:
@@ -333,7 +333,7 @@ class Dataway(object):
                     k = re.sub(RE_ESCAPE_FIELD_KEY, ESCAPE_REPLACER, k)
                     if isinstance(v, string_types):
                         v = re.sub(RE_ESCAPE_FIELD_STR_VALUE, ESCAPE_REPLACER, v)
-                        v = '"{0}"'.format(v)
+                        v = '"{0}"'.format(ensure_str(v))
 
                     elif isinstance(v, bool):
                         v = '{0}'.format(v).lower()
@@ -344,14 +344,14 @@ class Dataway(object):
                     else:
                         v = '{0}'.format(v)
 
-                    field_set_list.append('{0}={1}'.format(k, v))
+                    field_set_list.append('{0}={1}'.format(ensure_str(k), ensure_str(v)))
 
             field_set = ' {0}'.format(','.join(field_set_list))
 
             timestamp = p.get('timestamp')
             timestamp = ' {0}'.format(timestamp)
 
-            lines.append('{0}{1}{2}{3}'.format(measurement, tag_set, field_set, timestamp))
+            lines.append('{0}{1}{2}{3}'.format(ensure_str(measurement), ensure_str(tag_set), ensure_str(field_set), ensure_str(timestamp)))
 
         body = '\n'.join(lines)
         body = ensure_binary(body)
