@@ -112,18 +112,26 @@ class Dataway(object):
         if url:
             splited_url = urlsplit(url)
 
-            if splited_url.netloc:
-                host_port_parts = splited_url.netloc.split(':')
-                if len(host_port_parts) >= 1:
-                    self.host = host_port_parts[0]
-                if len(host_port_parts) >= 2:
-                    self.port = int(host_port_parts[1])
-
             if splited_url.scheme:
                 self.protocol = splited_url.scheme
 
             if splited_url.path:
                 self.path = splited_url.path
+
+            if splited_url.query:
+                self.path += '?' + splited_url.query
+
+            if splited_url.netloc:
+                host_port_parts = splited_url.netloc.split(':')
+                if len(host_port_parts) >= 1:
+                    self.host = host_port_parts[0]
+                    if self.protocol == 'https':
+                        self.port = 443
+                    else:
+                        self.port = 80
+
+                if len(host_port_parts) >= 2:
+                    self.port = int(host_port_parts[1])
 
     def _convert_to_ns(self, timestamp):
         timestamp = long_type(timestamp)
@@ -407,7 +415,6 @@ class Dataway(object):
             conn = httplib.HTTPConnection(self.host, port=self.port)
 
         conn.request(self.METHOD, self.path, body=body, headers=headers)
-
         resp = conn.getresponse()
 
         resp_status_code = resp.status
