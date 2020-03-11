@@ -37,7 +37,7 @@ Python 版 DataFlux Dataway SDK。
 ```python
 from dataway import Dataway
 
-dw = Dataway()
+dw = Dataway(url='http://localhost:9528/v1/write/metrics?token=xxxxxx')
 
 # 写入一个数据点
 dw.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
@@ -61,26 +61,26 @@ dw.write_points([
 
 ## API文档
 
-###### *class* `Dataway(url=None, host=None, port=None, protocol=None, path=None, datakit_uuid=None, access_key=None, secret_key=None, debug=False)`
+###### *class* `Dataway(url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False)`
 
 Dataway 类
 
-|            参数           |     类型    | 是否必须 |            默认值            |                               说明                               |
-|---------------------------|-------------|----------|------------------------------|------------------------------------------------------------------|
-| `url`                     | `str`       | 可选     | `None`                       | Dataway 完整地址，如：`"http://localhost:9528/v1/write/metrics"` |
-| `host`                    | `str`       | 可选     | `"localhost"`                | Dataway 主机地址                                                 |
-| `port`                    | `int`       | 可选     | `9528`                       | Dataway 主机端口                                                 |
-| `protocol`                | `str`       | 可选     | `"http"`                     | Dataway 访问协议。`"http"`/`"https"`                             |
-| `path`                    | `str`       | 可选     | `"/v1/write/metrics"`        | Dataway 数据上报路径                                             |
-| `datakit_uuid`            | `str`       | 可选     | `"dataway-python-sdk-nodep"` | 数据上报采集器名称                                               |
-| `access_key`/`secret_key` | `str`/`str` | 可选     | `None`/`None`                | Dataway 认证用 AccessKey 和 SecretKey                            |
-| `debug`                   | `bool`      | 可选     | `False`                      | 是否打印详细调试信息                                             |
+|            参数           |     类型    | 是否必须 |        默认值         |                                      说明                                     |
+|---------------------------|-------------|----------|-----------------------|-------------------------------------------------------------------------------|
+| `url`                     | `str`       | 可选     | `None`                | DataWay 完整地址，如：`"http://localhost:9528/v1/write/metrics?token=xxxxxx"` |
+| `host`                    | `str`       | 可选     | `"localhost"`         | DataWay 主机地址                                                              |
+| `port`                    | `int`       | 可选     | `9528`                | DataWay 主机端口                                                              |
+| `protocol`                | `str`       | 可选     | `"http"`              | DataWay 访问协议。`"http"`/`"https"`                                          |
+| `path`                    | `str`       | 可选     | `"/v1/write/metrics"` | DataWay 数据上报路径                                                          |
+| `token`                   | `str`       | 可选     | `None`                | DataFlux 工作空间上报Token                                                    |
+| `access_key`/`secret_key` | `str`/`str` | 可选     | `None`/`None`         | DataWay 认证用 AccessKey 和 SecretKey                                         |
+| `debug`                   | `bool`      | 可选     | `False`               | 是否打印详细调试信息                                                          |
 
 以下两种初始化方式等价：
-- `Dataway(url="http://localhost:9528/v1/write/metrics")`
-- `Dataway(host="localhost", port="9528", protocol="http", path="/v1/write/metrics")`
+- `Dataway(url="http://localhost:9528/v1/write/metrics?token=xxxxxx")`
+- `Dataway(host="localhost", port="9528", protocol="http", path="/v1/write/metrics", token='xxxxxx')`
 
-`datakit_uuid`参数尽可能填写上报数据的业务系统名称，方便在 DataFlux 中查询
+`token`可以在`url`中作为参数出现，或者通过`token`传递。
 
 `access_key`/`secret_key` 只有在 Dataway 开启认证后才需要填写。Dataway 开启认证方式如下：
 

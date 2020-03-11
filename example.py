@@ -8,7 +8,7 @@ def print_sep(title):
     print('{0} [{1}] {2}'.format(line, title, line))
 
 def main():
-    dw = Dataway(debug=True)
+    dw = Dataway(debug=True, protocol='https', host='openway.dataflux.cn', port=443, token='YOUR_DATAWAY_TOKEN')
 
     points = [
         {

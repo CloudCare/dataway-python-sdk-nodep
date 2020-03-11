@@ -37,7 +37,7 @@ See [example.py](example.py)
 ```python
 from dataway import Dataway
 
-dw = Dataway()
+dw = Dataway(url='http://localhost:9528/v1/write/metrics?token=xxxxxx')
 
 # Write a point
 dw.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
@@ -61,26 +61,26 @@ dw.write_points([
 
 ## API Document
 
-###### *class* `Dataway(url=None, host=None, port=None, protocol=None, path=None, datakit_uuid=None, access_key=None, secret_key=None, debug=False)`
+###### *class* `Dataway(url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False)`
 
 Dataway class
 
-|         Parameter         |     Type    | Required |        Default Value         |                               Description                                |
-|---------------------------|-------------|----------|------------------------------|--------------------------------------------------------------------------|
-| `url`                     | `str`       | Optional | `None`                       | Dataway full access URL, e.g. `"http://localhost:9528/v1/write/metrics"` |
-| `host`                    | `str`       | Optional | `"localhost"`                | Dataway host                                                             |
-| `port`                    | `int`       | Optional | `9528`                       | Dataway port                                                             |
-| `protocol`                | `str`       | Optional | `"http"`                     | Dataway protocol. `"http"`/`"https"`                                     |
-| `path`                    | `str`       | Optional | `"/v1/write/metrics"`        | Dataway report path                                                      |
-| `datakit_uuid`            | `str`       | Optional | `"dataway-python-sdk-nodep"` | Datakit name                                                             |
-| `access_key`/`secret_key` | `str`/`str` | Optional | `None`/`None`                | Dataway AccessKey and SecretKey for authorization                        |
-| `debug`                   | `bool`      | Optional | `False`                      | Print detailed debug info or not                                         |
+|         Parameter         |     Type    | Required |     Default Value     |                                      Description                                      |
+|---------------------------|-------------|----------|-----------------------|---------------------------------------------------------------------------------------|
+| `url`                     | `str`       | Optional | `None`                | Dataway full access URL, e.g. `"http://localhost:9528/v1/write/metrics?token=xxxxxx"` |
+| `host`                    | `str`       | Optional | `"localhost"`         | Dataway host                                                                          |
+| `port`                    | `int`       | Optional | `9528`                | Dataway port                                                                          |
+| `protocol`                | `str`       | Optional | `"http"`              | Dataway protocol. `"http"`/`"https"`                                                  |
+| `path`                    | `str`       | Optional | `"/v1/write/metrics"` | Dataway report path                                                                   |
+| `token`                   | `str`       | Optional | `None`                | DataFlux Workspace Token                                                              |
+| `access_key`/`secret_key` | `str`/`str` | Optional | `None`/`None`         | Dataway AccessKey and SecretKey for authorization                                     |
+| `debug`                   | `bool`      | Optional | `False`               | Print detailed debug info or not                                                      |
 
 The following instantiation are equivalent:
-- `Dataway(url="http://localhost:9528/v1/write/metrics")`
-- `Dataway(host="localhost", port="9528", protocol="http", path="/v1/write/metrics")`
+- `Dataway(url="http://localhost:9528/v1/write/metrics?token=xxxxxx")`
+- `Dataway(host="localhost", port="9528", protocol="http", path="/v1/write/metrics", token='xxxxxx')`
 
-`datakit_uuid` should be specified by business system name for being queried in DataFlux.
+`token` can be place in `url` or be passed as `token` parameter.
 
 `access_key`/`secret_key` is required when the authorization of Dataway opened. To open the authorization of Dataway:
 

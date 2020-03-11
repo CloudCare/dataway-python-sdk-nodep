@@ -74,13 +74,13 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
 
 if PY3:
     import http.client as httplib
-    from urllib.parse import urlsplit, urlparse, urlencode, quote
+    from urllib.parse import urlsplit, urlparse, urlencode, quote, parse_qs
     long_type = int
 
 else:
     import httplib
     from urllib import urlencode, quote
-    from urlparse import urlparse, urlsplit
+    from urlparse import urlparse, urlsplit, parse_qs
     long_type = long
 
 MIN_ALLOWED_NS_TIMESTAMP = 1000000000000000000
@@ -96,15 +96,15 @@ class Dataway(object):
     CONTENT_TYPE = 'text/plain'
     METHOD       = 'POST'
 
-    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, datakit_uuid=None, access_key=None, secret_key=None, debug=False):
-        self.host         = host or 'localhost'
-        self.port         = int(port or 9528)
-        self.protocol     = protocol or 'http'
-        self.path         = path or '/v1/write/metrics'
-        self.datakit_uuid = datakit_uuid or 'dataway-python-sdk-nodep'
-        self.access_key   = access_key
-        self.secret_key   = secret_key
-        self.debug        = debug or False
+    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False):
+        self.host       = host or 'localhost'
+        self.port       = int(port or 9528)
+        self.protocol   = protocol or 'http'
+        self.path       = path or '/v1/write/metrics'
+        self.token      = token
+        self.access_key = access_key
+        self.secret_key = secret_key
+        self.debug      = debug or False
 
         if self.debug:
             print('[Python Version]\n{0}'.format(sys.version))
@@ -119,7 +119,9 @@ class Dataway(object):
                 self.path = splited_url.path
 
             if splited_url.query:
-                self.path += '?' + splited_url.query
+                parsed_query = parse_qs(splited_url.query)
+                if 'token' in parsed_query:
+                    self.token = parsed_query['token'][0]
 
             if splited_url.netloc:
                 host_port_parts = splited_url.netloc.split(':')
@@ -132,6 +134,9 @@ class Dataway(object):
 
                 if len(host_port_parts) >= 2:
                     self.port = int(host_port_parts[1])
+
+        if not self.token:
+            raise Exception('`token` is required')
 
     def _convert_to_ns(self, timestamp):
         timestamp = long_type(timestamp)
@@ -377,8 +382,7 @@ class Dataway(object):
 
     def _prepare_headers(self, body):
         headers = {
-            'Content-Type'  : self.CONTENT_TYPE,
-            'X-Datakit-UUID': self.datakit_uuid,
+            'Content-Type': self.CONTENT_TYPE,
         }
 
         if not self.access_key or not self.secret_key:
@@ -414,7 +418,8 @@ class Dataway(object):
         else:
             conn = httplib.HTTPConnection(self.host, port=self.port)
 
-        conn.request(self.METHOD, self.path, body=body, headers=headers)
+        url = self.path + '?token={0}'.format(self.token)
+        conn.request(self.METHOD, url, body=body, headers=headers)
         resp = conn.getresponse()
 
         resp_status_code = resp.status
