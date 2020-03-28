@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from dataway import Dataway
+from dataway import DataWay
 
 def print_sep(title):
     line = '-' * 10
     print('{0} [{1}] {2}'.format(line, title, line))
 
 def main():
-    dw = Dataway(debug=True, protocol='https', host='openway.dataflux.cn', port=443, token='YOUR_DATAWAY_TOKEN')
+    dw = DataWay(debug=True, protocol='https', host='openway.dataflux.cn', port=443, token='YOUR_DATAWAY_TOKEN')
 
     points = [
         {
@@ -45,10 +45,10 @@ def main():
         },
     ]
 
-    print_sep('Dataway.write_point()')
+    print_sep('DataWay write point')
     dw.write_point(**points[0])
 
-    print_sep('Dataway.write_points()')
+    print_sep('DataWay write points')
     dw.write_points(points)
 
     keyevents = [
@@ -66,10 +66,10 @@ def main():
         },
     ]
 
-    print_sep('Dataway.write_keyevent()')
+    print_sep('DataWay write keyevent')
     dw.write_keyevent(**keyevents[0])
 
-    print_sep('Dataway.write_keyevents()')
+    print_sep('DataWay write keyevents')
     dw.write_keyevents(keyevents)
 
     flows = [
@@ -92,10 +92,10 @@ def main():
         },
     ]
 
-    print_sep('Dataway.write_flow()')
+    print_sep('DataWay write flow')
     dw.write_flow(**flows[0])
 
-    print_sep('Dataway.write_flows()')
+    print_sep('DataWay write flows')
     dw.write_flows(flows)
 
     alerts = [
@@ -129,10 +129,10 @@ def main():
         },
     ]
 
-    print_sep('Dataway.write_alert()')
+    print_sep('DataWay write alert')
     dw.write_alert(**alerts[0])
 
-    print_sep('Dataway.write_alerts()')
+    print_sep('DataWay write alerts')
     dw.write_alerts(alerts)
 
 if __name__ == '__main__':

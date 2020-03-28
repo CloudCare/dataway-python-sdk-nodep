@@ -1,6 +1,6 @@
-# DataFlux Dataway Python SDK -nodep
+# DataFlux DataWay Python SDK -nodep
 
-Python 版 DataFlux Dataway SDK。
+Python 版 DataFlux DataWay SDK。
 
 [English Version](README-en.md)
 
@@ -18,7 +18,7 @@ Python 版 DataFlux Dataway SDK。
 
 3. 关键事件（`Keyevent`）/ 流程行为（`FLow`）/ 告警（`Alert`）支持。
 
-4. Dataway 认证支持。
+4. DataWay 认证支持。
 
 5. HTTP/HTTPS 支持。
 
@@ -35,9 +35,9 @@ Python 版 DataFlux Dataway SDK。
 ## 简单示例
 
 ```python
-from dataway import Dataway
+from dataway import DataWay
 
-dw = Dataway(url='http://localhost:9528/v1/write/metrics?token=xxxxxx')
+dw = DataWay(url='http://localhost:9528/v1/write/metrics?token=xxxxxx')
 
 # 写入一个数据点
 dw.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
@@ -61,9 +61,9 @@ dw.write_points([
 
 ## API文档
 
-###### *class* `Dataway(url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False)`
+###### *class* `DataWay(url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False)`
 
-Dataway 类
+DataWay 类
 
 |            参数           |     类型    | 是否必须 |        默认值         |                                      说明                                     |
 |---------------------------|-------------|----------|-----------------------|-------------------------------------------------------------------------------|
@@ -77,12 +77,12 @@ Dataway 类
 | `debug`                   | `bool`      | 可选     | `False`               | 是否打印详细调试信息                                                          |
 
 以下两种初始化方式等价：
-- `Dataway(url="http://localhost:9528/v1/write/metrics?token=xxxxxx")`
-- `Dataway(host="localhost", port="9528", protocol="http", path="/v1/write/metrics", token='xxxxxx')`
+- `DataWay(url="http://localhost:9528/v1/write/metrics?token=xxxxxx")`
+- `DataWay(host="localhost", port="9528", protocol="http", path="/v1/write/metrics", token='xxxxxx')`
 
 `token`可以在`url`中作为参数出现，或者通过`token`传递。
 
-`access_key`/`secret_key` 只有在 Dataway 开启认证后才需要填写。Dataway 开启认证方式如下：
+`access_key`/`secret_key` 只有在 DataWay 开启认证后才需要填写。DataWay 开启认证方式如下：
 
 ```shell
 sudo vim /usr/local/cloudcare/forethought/dataway/dataway.yaml
@@ -105,7 +105,7 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_point(measurement, tags=None, fields=None, timestamp=None)`
+###### *method* `DataWay.write_point(measurement, tags=None, fields=None, timestamp=None)`
 
 写入数据点
 
@@ -122,7 +122,7 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_points(points)`
+###### *method* `DataWay.write_points(points)`
 
 写入多个数据点
 
@@ -141,7 +141,7 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_keyevent(title, timestamp, des=None, link=None, source=None, tags=None)`
+###### *method* `DataWay.write_keyevent(title, timestamp, des=None, link=None, source=None, tags=None)`
 
 写入关键事件
 
@@ -160,7 +160,7 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_keyevents(keyevents)`
+###### *method* `DataWay.write_keyevents(keyevents)`
 
 写入多个关键事件
 
@@ -181,7 +181,7 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_flow(app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
+###### *method* `DataWay.write_flow(app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
 
 写入流程行为
 
@@ -205,7 +205,7 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_flows(flows)`
+###### *method* `DataWay.write_flows(flows)`
 
 写入多个流程行为
 
@@ -229,7 +229,7 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_alert(level, alert_id, check_value, timestamp, duration=None, duration_ms=None, rule_id=None, rule_name=None, no_data=False, action_type=None, action_content=None, alert_item_tags=None, tags=None)`
+###### *method* `DataWay.write_alert(level, alert_id, check_value, timestamp, duration=None, duration_ms=None, rule_id=None, rule_name=None, no_data=False, action_type=None, action_content=None, alert_item_tags=None, tags=None)`
 
 写入告警
 
@@ -257,7 +257,7 @@ routes_config:
 
 
 
-###### *method* `Dataway.write_alerts(alerts)`
+###### *method* `DataWay.write_alerts(alerts)`
 
 写入多个告警
 

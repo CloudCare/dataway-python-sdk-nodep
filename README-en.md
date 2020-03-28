@@ -1,6 +1,6 @@
-# DataFlux Dataway Python SDK -nodep
+# DataFlux DataWay Python SDK -nodep
 
-A DataFlux Dataway SDK for Python.
+A DataFlux DataWay SDK for Python.
 
 [中文版](README.md)
 
@@ -18,7 +18,7 @@ A DataFlux Dataway SDK for Python.
 
 3. `Keyevent` / `FLow` / `Alert` Support.
 
-4. Dataway Authorization support.
+4. DataWay Authorization support.
 
 5. HTTP/HTTPS support.
 
@@ -35,9 +35,9 @@ See [example.py](example.py)
 ## Quick Example
 
 ```python
-from dataway import Dataway
+from dataway import DataWay
 
-dw = Dataway(url='http://localhost:9528/v1/write/metrics?token=xxxxxx')
+dw = DataWay(url='http://localhost:9528/v1/write/metrics?token=xxxxxx')
 
 # Write a point
 dw.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
@@ -61,28 +61,28 @@ dw.write_points([
 
 ## API Document
 
-###### *class* `Dataway(url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False)`
+###### *class* `DataWay(url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False)`
 
-Dataway class
+DataWay class
 
 |         Parameter         |     Type    | Required |     Default Value     |                                      Description                                      |
 |---------------------------|-------------|----------|-----------------------|---------------------------------------------------------------------------------------|
-| `url`                     | `str`       | Optional | `None`                | Dataway full access URL, e.g. `"http://localhost:9528/v1/write/metrics?token=xxxxxx"` |
-| `host`                    | `str`       | Optional | `"localhost"`         | Dataway host                                                                          |
-| `port`                    | `int`       | Optional | `9528`                | Dataway port                                                                          |
-| `protocol`                | `str`       | Optional | `"http"`              | Dataway protocol. `"http"`/`"https"`                                                  |
-| `path`                    | `str`       | Optional | `"/v1/write/metrics"` | Dataway report path                                                                   |
+| `url`                     | `str`       | Optional | `None`                | DataWay full access URL, e.g. `"http://localhost:9528/v1/write/metrics?token=xxxxxx"` |
+| `host`                    | `str`       | Optional | `"localhost"`         | DataWay host                                                                          |
+| `port`                    | `int`       | Optional | `9528`                | DataWay port                                                                          |
+| `protocol`                | `str`       | Optional | `"http"`              | DataWay protocol. `"http"`/`"https"`                                                  |
+| `path`                    | `str`       | Optional | `"/v1/write/metrics"` | DataWay report path                                                                   |
 | `token`                   | `str`       | Optional | `None`                | DataFlux Workspace Token                                                              |
-| `access_key`/`secret_key` | `str`/`str` | Optional | `None`/`None`         | Dataway AccessKey and SecretKey for authorization                                     |
+| `access_key`/`secret_key` | `str`/`str` | Optional | `None`/`None`         | DataWay AccessKey and SecretKey for authorization                                     |
 | `debug`                   | `bool`      | Optional | `False`               | Print detailed debug info or not                                                      |
 
 The following instantiation are equivalent:
-- `Dataway(url="http://localhost:9528/v1/write/metrics?token=xxxxxx")`
-- `Dataway(host="localhost", port="9528", protocol="http", path="/v1/write/metrics", token='xxxxxx')`
+- `DataWay(url="http://localhost:9528/v1/write/metrics?token=xxxxxx")`
+- `DataWay(host="localhost", port="9528", protocol="http", path="/v1/write/metrics", token='xxxxxx')`
 
 `token` can be place in `url` or be passed as `token` parameter.
 
-`access_key`/`secret_key` is required when the authorization of Dataway opened. To open the authorization of Dataway:
+`access_key`/`secret_key` is required when the authorization of DataWay opened. To open the authorization of DataWay:
 
 ```shell
 sudo vim /usr/local/cloudcare/forethought/dataway/dataway.yaml
@@ -105,7 +105,7 @@ Finally, the AccessKey and SecretKey are the `access_key` and `secret_key` in th
 
 
 
-###### *method* `Dataway.write_point(measurement, tags=None, fields=None, timestamp=None)`
+###### *method* `DataWay.write_point(measurement, tags=None, fields=None, timestamp=None)`
 
 Write one point
 
@@ -122,7 +122,7 @@ Write one point
 
 
 
-###### *method* `Dataway.write_points(points)`
+###### *method* `DataWay.write_points(points)`
 
 Write many points
 
@@ -141,7 +141,7 @@ Write many points
 
 
 
-###### *method* `Dataway.write_keyevent(title, timestamp, des=None, link=None, source=None, tags=None)`
+###### *method* `DataWay.write_keyevent(title, timestamp, des=None, link=None, source=None, tags=None)`
 
 Write a key event
 
@@ -160,7 +160,7 @@ Write a key event
 
 
 
-###### *method* `Dataway.write_keyevents(keyevents)`
+###### *method* `DataWay.write_keyevents(keyevents)`
 
 Write many key events
 
@@ -181,7 +181,7 @@ Write many key events
 
 
 
-###### *method* `Dataway.write_flow(app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
+###### *method* `DataWay.write_flow(app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
 
 Write a flow
 
@@ -205,7 +205,7 @@ Either `duration` or `duration_ms` should be spcified.
 
 
 
-###### *method* `Dataway.write_flows(flows)`
+###### *method* `DataWay.write_flows(flows)`
 
 Write many flows
 
@@ -229,7 +229,7 @@ Write many flows
 
 
 
-###### *method* `Dataway.write_alert(level, alert_id, check_value, timestamp, duration=None, duration_ms=None, rule_id=None, rule_name=None, no_data=False, action_type=None, action_content=None, alert_item_tags=None, tags=None)`
+###### *method* `DataWay.write_alert(level, alert_id, check_value, timestamp, duration=None, duration_ms=None, rule_id=None, rule_name=None, no_data=False, action_type=None, action_content=None, alert_item_tags=None, tags=None)`
 
 Write an alert
 
@@ -257,7 +257,7 @@ Either `duration` or `duration_ms` should be spcified.
 
 
 
-###### *method* `Dataway.write_alerts(alerts)`
+###### *method* `DataWay.write_alerts(alerts)`
 
 Write many alerts
 

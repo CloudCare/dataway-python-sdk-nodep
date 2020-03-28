@@ -95,27 +95,36 @@ RE_ESCAPE_FIELD_STR_VALUE = re.compile('(["])')
 ALERT_LEVELS = ('critical', 'warning', 'info', 'ok')
 
 ASSERT_TYPE_MAPS = {
-    'dict'  : (dict, OrderedDict),
-    'str'   : string_types,
-    'number': (integer_types, float),
-    'int'   : integer_types,
+    'dict': {
+        'type'   : (dict, OrderedDict),
+        'message': 'should be a dict or OrderedDict',
+    },
+    'str': {
+        'type'   : string_types,
+        'message': 'should be a str or unicode',
+    },
+    'number': {
+        'type'   : (integer_types, float),
+        'message': 'should be an int or float',
+    },
+    'int': {
+        'type'   : integer_types,
+        'message': 'should be an int',
+    },
 }
 def _assert_type(data, data_type, name):
-    if not isinstance(data, ASSERT_TYPE_MAPS[data_type]):
-        raise Exception('`{0}` should be a dict or OrderedDict, got {1}'.format(name, type(data).__name__))
+    if not isinstance(data, ASSERT_TYPE_MAPS[data_type]['type']):
+        raise Exception('`{0}` {1}, got {2}'.format(name, ASSERT_TYPE_MAPS[data_type]['message'], type(data).__name__))
     return data
 
 def assert_dict(data, name):
     return _assert_type(data, 'dict', name)
-
 def assert_str(data, name):
     return _assert_type(data, 'str', name)
-
-def assert_int(data, name):
-    return _assert_type(data, 'int', name)
-
 def assert_number(data, name):
     return _assert_type(data, 'number', name)
+def assert_int(data, name):
+    return _assert_type(data, 'int', name)
 
 def assert_enum(data, name, options):
     if data not in options:
@@ -125,8 +134,9 @@ def assert_enum(data, name, options):
 def assert_tags(data, name):
     assert_dict(data, name)
     for k, v in data.items():
-        if not isinstance(k, string_types) or not isinstance(v, string_types):
-            raise Exception('`{0}` key and value should be a str or unicode, got {0}["{1}"] = {2}, {3}'.format(name, k, v, type(v).__name__))
+        assert_str(k, 'Key of `{0}`: {1}'.format(name, k))
+        assert_str(v, 'Value of `{0}["{1}"]`: {2}'.format(name, k, v))
+
     return data
 
 def assert_json_str(data, name):
@@ -147,7 +157,7 @@ def assert_json_str(data, name):
 
     return data
 
-class Dataway(object):
+class DataWay(object):
     CONTENT_TYPE = 'text/plain'
     METHOD       = 'POST'
 
@@ -358,9 +368,7 @@ class Dataway(object):
             assert_dict(tags, name='tags')
             assert_tags(tags, name='tags')
 
-        fields = point.get('fields')
-        if fields is not None:
-            assert_dict(fields, name='fields')
+        fields = assert_dict(point.get('fields'), name='fields')
 
         timestamp = point.get('timestamp')
         if timestamp is not None:
@@ -490,6 +498,7 @@ class Dataway(object):
 
         # Check Fields
         fields = flow.get('fields') or {}
+        assert_dict(fields, name='fields')
 
         # Fields.$duration
         duration_ms = flow.get('duration_ms')
@@ -651,3 +660,6 @@ class Dataway(object):
             prepared_points.append(self._prepare_alert(p))
 
         return self._send_points(prepared_points)
+
+
+Dataway = DataWay
