@@ -74,13 +74,13 @@ def ensure_str(s, encoding='utf-8', errors='strict'):
 
 if PY3:
     import http.client as httplib
-    from urllib.parse import urlsplit, urlparse, urlencode, quote, parse_qs
+    from urllib.parse import urlsplit, urlparse, urlencode, parse_qs
     long_type = int
 
 else:
     import httplib
-    from urllib import urlencode, quote
-    from urlparse import urlparse, urlsplit, parse_qs
+    from urllib import urlencode
+    from urlparse import urlsplit, urlparse, parse_qs
     long_type = long
 
 MIN_ALLOWED_NS_TIMESTAMP = 1000000000000000000
@@ -91,6 +91,61 @@ RE_ESCAPE_TAG_VALUE       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_FIELD_KEY       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_MEASUREMENT     = re.compile('([, ])')
 RE_ESCAPE_FIELD_STR_VALUE = re.compile('(["])')
+
+ALERT_LEVELS = ('critical', 'warning', 'info', 'ok')
+
+ASSERT_TYPE_MAPS = {
+    'dict'  : (dict, OrderedDict),
+    'str'   : string_types,
+    'number': (integer_types, float),
+    'int'   : integer_types,
+}
+def _assert_type(data, data_type, name):
+    if not isinstance(data, ASSERT_TYPE_MAPS[data_type]):
+        raise Exception('`{0}` should be a dict or OrderedDict, got {1}'.format(name, type(data).__name__))
+    return data
+
+def assert_dict(data, name):
+    return _assert_type(data, 'dict', name)
+
+def assert_str(data, name):
+    return _assert_type(data, 'str', name)
+
+def assert_int(data, name):
+    return _assert_type(data, 'int', name)
+
+def assert_number(data, name):
+    return _assert_type(data, 'number', name)
+
+def assert_enum(data, name, options):
+    if data not in options:
+        raise Exception('`{0}` should be one of {1}, got {2}'.format(name, ','.join(options), data))
+    return data
+
+def assert_tags(data, name):
+    assert_dict(data, name)
+    for k, v in data.items():
+        if not isinstance(k, string_types) or not isinstance(v, string_types):
+            raise Exception('`{0}` key and value should be a str or unicode, got {0}["{1}"] = {2}, {3}'.format(name, k, v, type(v).__name__))
+    return data
+
+def assert_json_str(data, name):
+    if isinstance(data, string_types):
+        try:
+            data = json.dumps(json.loads(data), ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+        except Exception as e:
+            raise Exception('`{0}` should be a JSON or JSON string, got {1}'.format(name, data))
+
+    elif isinstance(data, (dict, OrderedDict, list, tuple)):
+        try:
+            data = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
+        except Exception as e:
+            raise Exception('`{0}` should be a JSON or JSON string. Error occured during serialization: {1}'.format(name, e))
+
+    else:
+        raise Exception('`check_value` should be a JSON or JSON string')
+
+    return data
 
 class Dataway(object):
     CONTENT_TYPE = 'text/plain'
@@ -149,152 +204,47 @@ class Dataway(object):
 
         return timestamp
 
-    def _preapre_point(self, point):
-        if not isinstance(point, (dict, OrderedDict)):
-            raise Exception('`point` should be a dict or OrderedDict, got {0}'.format(type(point).__name__))
+    def _get_body_md5(self, body=None):
+        h = md5()
+        h.update(ensure_binary(body or ''))
 
-        measurement = point.get('measurement')
-        if not isinstance(measurement, string_types):
-            raise Exception('`measurement` should be a str or unicode, got {0}'.format(type(measurement).__name__))
+        md5_res = h.digest()
+        md5_res = base64.standard_b64encode(md5_res).decode()
 
-        tags = point.get('tags')
-        if tags is not None:
-            if not isinstance(tags, (dict, OrderedDict)):
-                raise Exception('`tags` should be a dict or OrderedDict, got {0}'.format(type(tags).__name__))
+        return md5_res
 
-            for k, v in tags.items():
-                if not isinstance(v, string_types):
-                    raise Exception('`tags` value should be a str or unicode, got tags["{0}"] = {1}, {2}'.format(k, v, type(v).__name__))
+    def _get_sign(self, str_to_sign):
+        h = hmac.new(ensure_binary(self.secret_key), ensure_binary(str_to_sign), sha1)
 
-        fields = point.get('fields')
-        if fields is not None:
-            if not isinstance(fields, (dict, OrderedDict)):
-                raise Exception('`fields` should be a dict or OrderedDict, got {0}'.format(type(fields).__name__))
+        sign = h.digest()
+        sign = base64.standard_b64encode(sign).decode()
 
-        timestamp = point.get('timestamp')
-        if timestamp is not None:
-            if not isinstance(timestamp, (integer_types, float)):
-                raise Exception('`timestamp` should be an int, long or float, got {0}'.format(type(timestamp).__name__))
+        return sign
 
-        if timestamp is None:
-            timestamp = time.time()
-
-        timestamp = self._convert_to_ns(timestamp)
-
-        point = {
-            'measurement': measurement,
-            'tags'       : tags   or None,
-            'fields'     : fields or None,
-            'timestamp'  : timestamp,
+    def _prepare_headers(self, body):
+        headers = {
+            'Content-Type': self.CONTENT_TYPE,
         }
-        return point
 
-    def _prepare_keyevent(self, keyevent):
-        if not isinstance(keyevent, (dict, OrderedDict)):
-            raise Exception('`keyevent` should be a dict or OrderedDict, got {0}'.format(type(keyevent).__name__))
+        if not self.access_key or not self.secret_key:
+            return headers
 
-        # Check Tags
-        tags = keyevent.get('tags') or {}
+        body_md5 = self._get_body_md5(body)
+        date_str = formatdate(timeval=None, localtime=False, usegmt=True)
+        str_to_sign = '\n'.join([self.METHOD, body_md5, self.CONTENT_TYPE, date_str])
 
-        source = keyevent.get('source')
-        if source is not None:
-            if not isinstance(source, string_types):
-                raise Exception('`source` should be a str or unicode, got {0}'.format(type(source).__name__))
-            else:
-                tags['$source'] = source
+        sign = self._get_sign(str_to_sign)
 
-        # Check Fields
-        fields = {}
+        if self.debug:
+            print('\n[String to sign] {0}'.format(json.dumps(str_to_sign)))
+            print('[Signature] {0}'.format(json.dumps(sign)))
 
-        title = keyevent.get('title')
-        if not isinstance(title, string_types):
-            raise Exception('`title` should be a str or unicode, got {0}'.format(type(title).__name__))
-        else:
-            fields['$title'] = title
+        headers.update({
+            'Date'         : date_str,
+            'Authorization': 'DWAY {0}:{1}'.format(self.access_key, sign),
+        })
 
-        des = keyevent.get('des')
-        if des is not None:
-            if not isinstance(des, string_types):
-                raise Exception('`des` should be a str or unicode, got {0}'.format(type(des).__name__))
-            else:
-                fields['$des'] = des
-
-        link = keyevent.get('link')
-        if link is not None:
-            if not isinstance(link, string_types):
-                raise Exception('`link` should be a str or unicode, got {0}'.format(type(link).__name__))
-
-            elif not link.lower().startswith('http://') \
-                    and not link.lower().startswith('https://') \
-                    or link.endswith('://'):
-                raise Exception('`link` should be a valid URL with protocol, got {0}'.format(link))
-
-            else:
-                fields['$link'] = link
-
-        point = {
-            'measurement': '$keyevent',
-            'tags'       : tags,
-            'fields'     : fields,
-            'timestamp'  : keyevent.get('timestamp'),
-        }
-        return self._preapre_point(point)
-
-    def _prepare_flow(self, flow):
-        if not isinstance(flow, (dict, OrderedDict)):
-            raise Exception('`flow` should be a dict or OrderedDict, got {0}'.format(type(flow).__name__))
-
-        # Check Tags
-        tags = flow.get('tags') or {}
-
-        trace_id = flow.get('trace_id')
-        if not isinstance(trace_id, string_types):
-            raise Exception('`trace_id` should be a str or unicode, got {0}'.format(type(trace_id).__name__))
-        else:
-            tags['$traceId'] = trace_id
-
-        name = flow.get('name')
-        if not isinstance(name, string_types):
-            raise Exception('`name` should be a str or unicode, got {0}'.format(type(name).__name__))
-        else:
-            tags['$name'] = name
-
-        parent = flow.get('parent')
-        if parent is not None:
-            if not isinstance(parent, string_types):
-                raise Exception('`parent` should be a str or unicode, got {0}'.format(type(parent).__name__))
-            else:
-                tags['$parent'] = parent
-
-        # Check Fields
-        fields = flow.get('fields') or {}
-
-        duration_ms = flow.get('duration_ms')
-        if duration_ms is not None:
-            if not isinstance(duration_ms, integer_types):
-                raise Exception('`duration_ms` should be an integer or long, got {0}'.format(type(duration_ms).__name__))
-
-        duration = flow.get('duration')
-        if duration is not None:
-            if not isinstance(duration, integer_types):
-                raise Exception('`duration` should be an integer or long, got {0}'.format(type(duration).__name__))
-
-        # to ms
-        if duration:
-            duration = duration * 1000
-
-        if duration_ms is None and duration is None:
-            raise Exception('`duration` or `duration_ms` is missing')
-
-        fields['$duration'] = duration_ms or duration
-
-        point = {
-            'measurement': '$flow_{0}'.format(flow.get('app')),
-            'tags'       : tags,
-            'fields'     : fields,
-            'timestamp'  : flow.get('timestamp'),
-        }
-        return self._preapre_point(point)
+        return headers
 
     def _prepare_body(self, points):
         if not isinstance(points, (list, tuple)):
@@ -363,52 +313,10 @@ class Dataway(object):
 
         return body
 
-    def _get_body_md5(self, body=None):
-        h = md5()
-        h.update(ensure_binary(body or ''))
-
-        md5_res = h.digest()
-        md5_res = base64.standard_b64encode(md5_res).decode()
-
-        return md5_res
-
-    def _get_sign(self, str_to_sign):
-        h = hmac.new(ensure_binary(self.secret_key), ensure_binary(str_to_sign), sha1)
-
-        sign = h.digest()
-        sign = base64.standard_b64encode(sign).decode()
-
-        return sign
-
-    def _prepare_headers(self, body):
-        headers = {
-            'Content-Type': self.CONTENT_TYPE,
-        }
-
-        if not self.access_key or not self.secret_key:
-            return headers
-
-        body_md5 = self._get_body_md5(body)
-        date_str = formatdate(timeval=None, localtime=False, usegmt=True)
-        str_to_sign = '\n'.join([self.METHOD, body_md5, self.CONTENT_TYPE, date_str])
-
-        sign = self._get_sign(str_to_sign)
-
-        if self.debug:
-            print('\n[String to sign] {0}'.format(json.dumps(str_to_sign)))
-            print('[Signature] {0}'.format(json.dumps(sign)))
-
-        headers.update({
-            'Date'         : date_str,
-            'Authorization': 'DWAY {0}:{1}'.format(self.access_key, sign),
-        })
-
-        return headers
-
     def _send_points(self, points):
         body = self._prepare_body(points)
         if self.debug:
-            print('[Request Body]\n{0}'.format(body))
+            print('[Request Body]\n{0}'.format(ensure_str(body)))
 
         headers = self._prepare_headers(body)
 
@@ -435,11 +343,42 @@ class Dataway(object):
 
         if self.debug:
             print('\n[Response Status Code] {0}'.format(resp_status_code))
-            print('[Response Body] {0}'.format(resp_raw_data))
+            print('[Response Body] {0}'.format(ensure_str(resp_raw_data)))
 
         return resp_status_code, resp_data
 
-    def write_point(self, measurement, tags=None, fields=None, timestamp=None):
+    # point
+    def _preapre_point(self, point):
+        assert_dict(point, name='point')
+
+        measurement = assert_str(point.get('measurement'), name='measurement')
+
+        tags = point.get('tags')
+        if tags is not None:
+            assert_dict(tags, name='tags')
+            assert_tags(tags, name='tags')
+
+        fields = point.get('fields')
+        if fields is not None:
+            assert_dict(fields, name='fields')
+
+        timestamp = point.get('timestamp')
+        if timestamp is not None:
+            assert_number(timestamp, name='timestamp')
+        else:
+            timestamp = time.time()
+
+        timestamp = self._convert_to_ns(timestamp)
+
+        point = {
+            'measurement': measurement,
+            'tags'       : tags   or None,
+            'fields'     : fields or None,
+            'timestamp'  : timestamp,
+        }
+        return point
+
+    def write_point(self, measurement, tags=None, fields=None, timestamp=None, ):
         point = {
             'measurement': measurement,
             'tags'       : tags,
@@ -460,7 +399,52 @@ class Dataway(object):
 
         return self._send_points(prepared_points)
 
-    def write_keyevent(self, title, timestamp, des=None, link=None, source=None, tags=None):
+    # $keyevent
+    def _prepare_keyevent(self, keyevent):
+        assert_dict(keyevent, name='keyevent')
+
+        # Check Tags
+        tags = keyevent.get('tags') or {}
+        assert_tags(tags, name='tags')
+
+        # Tags.$source
+        source = keyevent.get('source')
+        if source is not None:
+            tags['$source'] = assert_str(source, name='source')
+
+        # Check Fields
+        fields = {}
+
+        # Fields.$title
+        fields['$title'] = assert_str(keyevent.get('title'), name='title')
+
+        # Fields.$des
+        des = keyevent.get('des')
+        if des is not None:
+            fields['$des'] = assert_str(des, name='des')
+
+        # Fields.$link
+        link = keyevent.get('link')
+        if link is not None:
+            assert_str(link, name='link')
+
+            if not link.lower().startswith('http://') \
+                    and not link.lower().startswith('https://') \
+                    or link.endswith('://'):
+                raise Exception('`link` should be a valid URL with protocol, got {0}'.format(link))
+
+            fields['$link'] = link
+
+        point = {
+            'measurement': '$keyevent',
+            'tags'       : tags,
+            'fields'     : fields,
+            'timestamp'  : keyevent.get('timestamp'),
+        }
+        return self._preapre_point(point)
+
+    def write_keyevent(self, title, timestamp,
+        des=None, link=None, source=None, tags=None):
         keyevent = {
             'title'    : title,
             'des'      : des,
@@ -482,7 +466,59 @@ class Dataway(object):
 
         return self._send_points(prepared_points)
 
-    def write_flow(self, app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None):
+    # $flow
+    def _prepare_flow(self, flow):
+        assert_dict(flow, name='flow')
+
+        # Check Tags
+        tags = flow.get('tags') or {}
+        assert_tags(tags, name='tags')
+
+        # Measurements.$flow_*
+        assert_str(flow.get('app'), name='app')
+
+        # Tags.$traceId
+        tags['$traceId'] = assert_str(flow.get('trace_id'), name='trace_id')
+
+        # Tags.$name
+        tags['$name'] = assert_str(flow.get('name'), name='name')
+
+        # Tags.$parent
+        parent = flow.get('parent')
+        if parent is not None:
+            tags['$parent'] = assert_str(parent, name='parent')
+
+        # Check Fields
+        fields = flow.get('fields') or {}
+
+        # Fields.$duration
+        duration_ms = flow.get('duration_ms')
+        if duration_ms is not None:
+            assert_int(duration_ms, name='duration_ms')
+
+        duration = flow.get('duration')
+        if duration is not None:
+            assert_int(duration, name='duration')
+
+        # to ms
+        if duration:
+            duration = duration * 1000
+
+        if duration_ms is None and duration is None:
+            raise Exception('`duration` or `duration_ms` is missing')
+
+        fields['$duration'] = duration_ms or duration
+
+        point = {
+            'measurement': '$flow_{0}'.format(flow['app']),
+            'tags'       : tags,
+            'fields'     : fields,
+            'timestamp'  : flow.get('timestamp'),
+        }
+        return self._preapre_point(point)
+
+    def write_flow(self, app, trace_id, name, timestamp, duration=None, duration_ms=None,
+        parent=None, fields=None, tags=None):
         flow = {
             'app'        : app,
             'trace_id'   : trace_id,
@@ -504,5 +540,114 @@ class Dataway(object):
         prepared_points = []
         for p in flows:
             prepared_points.append(self._prepare_flow(p))
+
+        return self._send_points(prepared_points)
+
+    # $alert
+    def _prepare_alert(self, alert):
+        assert_dict(alert, name='alert')
+
+        # Check Tags
+        tags = alert.get('tags') or {}
+        assert_tags(tags, name='tags')
+
+        # Tags.$level
+        tags['$level'] = assert_enum(alert.get('level'), name='level', options=ALERT_LEVELS)
+
+        # Tags.$alertId
+        tags['$alertId'] = assert_str(alert.get('alert_id'), name='alert_id')
+
+        # Tags.$ruleId
+        rule_id = alert.get('rule_id')
+        if rule_id is not None:
+            tags['$ruleId'] = assert_str(rule_id, name='rule_id')
+
+        # Tags.$noData
+        no_data = alert.get('no_data')
+        if no_data:
+            tags['$noData'] = 'noData'
+
+        # Tags.$alertItem_*
+        alert_item_tags = alert.get('alert_item_tags')
+        if alert_item_tags is not None:
+            assert_tags(alert_item_tags, name='alert_item_tags')
+
+            for k, v in alert_item_tags.items():
+                tags['$alertItem_' + k] = v
+
+        # Tags.$actionType
+        action_type = alert.get('action_type')
+        if action_type is not None:
+            tags['$actionType'] = assert_str(action_type, name='action_type')
+
+        # Check Fields
+        fields = {}
+
+        # Fields.$duration
+        duration_ms = alert.get('duration_ms')
+        if duration_ms is not None:
+            assert_int(duration_ms, name='duration_ms')
+
+        duration = alert.get('duration')
+        if duration is not None:
+            assert_int(duration, name='duration')
+
+        # to ms
+        if duration:
+            duration = duration * 1000
+
+        if duration_ms is None and duration is None:
+            raise Exception('`duration` or `duration_ms` is missing')
+
+        fields['$duration'] = duration_ms or duration
+
+        # Fields.$checkValueJSON
+        fields['$checkValueJSON'] = assert_json_str(alert.get('check_value'), name='check_value')
+
+        # Fields.$ruleName
+        rule_name = alert.get('rule_name')
+        if rule_name is not None:
+            fields['$ruleName'] = assert_str(rule_name, name='rule_name')
+
+        # Fields.$actionContentJSON
+        action_content = alert.get('action_content')
+        if action_content is not None:
+            fields['$actionContentJSON'] = assert_json_str(action_content, name='action_content')
+
+        point = {
+            'measurement': '$alert',
+            'tags'       : tags,
+            'fields'     : fields,
+            'timestamp'  : alert.get('timestamp'),
+        }
+        return self._preapre_point(point)
+
+    def write_alert(self, level, alert_id, check_value, timestamp, duration=None, duration_ms=None,
+        rule_id=None, rule_name=None, no_data=False, action_type=None, action_content=None, alert_item_tags=None, tags=None):
+        alert = {
+            'level'          : level,
+            'alert_id'       : alert_id,
+            'rule_id'        : rule_id,
+            'rule_name'      : rule_name,
+            'no_data'        : no_data,
+            'duration'       : duration,
+            'duration_ms'    : duration_ms,
+            'check_value'    : check_value,
+            'action_type'    : action_type,
+            'action_content' : action_content,
+            'alert_item_tags': alert_item_tags,
+            'tags'           : tags,
+            'timestamp'      : timestamp,
+        }
+        prepared_point = self._prepare_alert(alert)
+        return self._send_points(prepared_point)
+
+    def write_alerts(self, alerts):
+        if not isinstance(alerts, (list, tuple)):
+            raise Exception('`alerts` should be a list or tuple, got {0}'.format(type(alerts).__name__))
+
+        prepared_points = []
+        for p in alerts:
+            prepared_points.append(self._prepare_alert(p))
 
         return self._send_points(prepared_points)

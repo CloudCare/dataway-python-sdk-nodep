@@ -16,7 +16,7 @@ A DataFlux Dataway SDK for Python.
     - microsecond (1/1000,000 second)
     - nanosecond (1/1000,000,000 second)
 
-3. `Keyevent`/`FLow` Support.
+3. `Keyevent` / `FLow` / `Alert` Support.
 
 4. Dataway Authorization support.
 
@@ -222,6 +222,62 @@ Write many flows
 | `flows[#]["parent"]`      | `str`                | Optional    | `None`        | previous node name. The first node do not have one                                                           |
 | `flows[#]["tags"]`        | `dict`               | Optional    | `None`        | extra tags. Both key and value should be a string                                                            |
 | `flows[#]["fields"]`      | `dict`               | Optional    | `None`        | extra fields. Key should be a string, value should be a string/integer/float/boolean value                   |
+
+
+
+---
+
+
+
+###### *method* `Dataway.write_alert(level, alert_id, check_value, timestamp, duration=None, duration_ms=None, rule_id=None, rule_name=None, no_data=False, action_type=None, action_content=None, alert_item_tags=None, tags=None)`
+
+Write an alert
+
+|     Parameter     |          Type         |   Required  | Default Value |                                                 Description                                                  |
+|-------------------|-----------------------|-------------|---------------|--------------------------------------------------------------------------------------------------------------|
+| `level`           | `str`                 | Required    |               | one of `"critical"` / `"warning"` / `"info"` / `"ok"`                                                        |
+| `alert_id`        | `str`                 | Required    |               | alert ID                                                                                                     |
+| `check_value`     | `JSON` / `str` (JSON) | Required    |               | check Value in JSON or JSON string                                                                           |
+| `timestamp`       | `int`/`long`/`float`  | Required    |               | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
+| `duration`        | `int`/`long`          | Alternative |               | duration of the flow on the node (second)                                                                    |
+| `duration_ms`     | `int`/`long`          | Alternative |               | duration of the flow on the node (millisecond)                                                               |
+| `rule_id`         | `str`                 | Optional    |               | rule ID                                                                                                      |
+| `rule_name`       | `str`                 | Optional    |               | rule Name                                                                                                    |
+| `no_data`         | `bool`                | Optional    |               | if the alert is a no-data alert                                                                              |
+| `action_type`     | `str`                 | Optional    |               | action type                                                                                                  |
+| `action_content`  | `JSON` / `str` (JSON) | Optional    |               | action data in JSON or JSON string                                                                           |
+| `alert_item_tags` | `dict`                | Optional    | `None`        | alert item extra tags. Both key and value should be a string                                                 |
+| `tags`            | `dict`                | Optional    | `None`        | extra tags. Both key and value should be a string                                                            |
+
+Either `duration` or `duration_ms` should be spcified.
+
+
+
+---
+
+
+
+###### *method* `Dataway.write_alerts(alerts)`
+
+Write many alerts
+
+|           Parameter           |          Type         |   Required  | Default Value |                                                 Description                                                  |
+|-------------------------------|-----------------------|-------------|---------------|--------------------------------------------------------------------------------------------------------------|
+| `alert`                       | `list`                | Required    |               | alert list                                                                                                   |
+| `alert[#]`                    | `dict`                | Required    |               | alert data                                                                                                   |
+| `alert[#]["level"]`           | `str`                 | Required    |               | one of `"critical"` / `"warning"` / `"info"` / `"ok"`                                                        |
+| `alert[#]["alert_id"]`        | `str`                 | Required    |               | alert ID                                                                                                     |
+| `alert[#]["check_value"]`     | `JSON` / `str` (JSON) | Required    |               | check Value in JSON or JSON string                                                                           |
+| `alert[#]["timestamp"]`       | `int`/`long`/`float`  | Required    |               | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
+| `alert[#]["duration"]`        | `int`/`long`          | Alternative |               | duration of the flow on the node (second)                                                                    |
+| `alert[#]["duration_ms"]`     | `int`/`long`          | Alternative |               | duration of the flow on the node (millisecond)                                                               |
+| `alert[#]["rule_id"]`         | `str`                 | Optional    |               | rule ID                                                                                                      |
+| `alert[#]["rule_name"]`       | `str`                 | Optional    |               | rule Name                                                                                                    |
+| `alert[#]["no_data"]`         | `bool`                | Optional    |               | if the alert is a no-data alert                                                                              |
+| `alert[#]["action_type"]`     | `str`                 | Optional    |               | action type                                                                                                  |
+| `alert[#]["action_content"]`  | `JSON` / `str` (JSON) | Optional    |               | action data in JSON or JSON string                                                                           |
+| `alert[#]["alert_item_tags"]` | `dict`                | Optional    | `None`        | alert item extra tags. Both key and value should be a string                                                 |
+| `alert[#]["tags"]`            | `dict`                | Optional    | `None`        | extra tags. Both key and value should be a string                                                            |
 
 ## Announcement
 

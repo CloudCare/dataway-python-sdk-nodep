@@ -98,5 +98,42 @@ def main():
     print_sep('Dataway.write_flows()')
     dw.write_flows(flows)
 
+    alerts = [
+        {
+            'level'          : 'critical',
+            'alert_id'       : 'ALERT-001',
+            'rule_id'        : 'RULE-001',
+            'rule_name'      : 'R1',
+            'no_data'        : True,
+            'duration'       : 10,
+            'check_value'    : {'M1': 90, 'M2': 90},
+            'action_type'    : 'mail',
+            'action_content' : {'to': 'someone@somemail.com', 'title': 'Test Alert Title', 'content': 'Test Alert Value'},
+            'alert_item_tags': {'T1': 'X', 'T2': 'Y'},
+            'tags'           : {'T1': 'X'},
+            'timestamp'      : 1577808000,
+        },
+        {
+            'level'          : 'ok',
+            'alert_id'       : 'ALERT-001',
+            'rule_id'        : 'RULE-001',
+            'rule_name'      : 'R1',
+            'no_data'        : False,
+            'duration_ms'    : 10000,
+            'check_value'    : {'M1': 10, 'M2': 10},
+            'action_type'    : 'mail',
+            'action_content' : {'to': 'someone@somemail.com', 'title': 'Test Alert Title', 'content': 'Test Alert Value'},
+            'alert_item_tags': {'T1': 'X', 'T2': 'Y'},
+            'tags'           : {'T1': 'X'},
+            'timestamp'      : 1577808001,
+        },
+    ]
+
+    print_sep('Dataway.write_alert()')
+    dw.write_alert(**alerts[0])
+
+    print_sep('Dataway.write_alerts()')
+    dw.write_alerts(alerts)
+
 if __name__ == '__main__':
     main()

@@ -16,7 +16,7 @@ Python 版 DataFlux Dataway SDK。
     - 微秒（1/1000,000 秒）
     - 纳秒（1/1000,000,000 秒）
 
-3. 关键事件（`Keyevent`）/流程行为（`FLow`）支持。
+3. 关键事件（`Keyevent`）/ 流程行为（`FLow`）/ 告警（`Alert`）支持。
 
 4. Dataway 认证支持。
 
@@ -222,6 +222,62 @@ routes_config:
 | `flows[#]["parent"]`      | `str`                | 可选       | `None` | 上一个节点的名称。第一个节点不用上报                                |
 | `flows[#]["tags"]`        | `dict`               | 可选       | `None` | 额外标签。键名和键值必须都为字符串                                  |
 | `flows[#]["fields"]`      | `dict`               | 可选       | `None` | 额外指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
+
+
+
+---
+
+
+
+###### *method* `Dataway.write_alert(level, alert_id, check_value, timestamp, duration=None, duration_ms=None, rule_id=None, rule_name=None, no_data=False, action_type=None, action_content=None, alert_item_tags=None, tags=None)`
+
+写入告警
+
+|        参数       |          类型         |  是否必须  | 默认值 |                           说明                           |
+|-------------------|-----------------------|------------|--------|----------------------------------------------------------|
+| `level`           | `str`                 | 必须       |        | `"critical"` / `"warning"` / `"info"` / `"ok"` 之一      |
+| `alert_id`        | `str`                 | 必须       |        | 告警ID                                                   |
+| `check_value`     | `JSON` / `str` (JSON) | 必须       |        | 检测值JSON或JSON字符串                                   |
+| `timestamp`       | `int`/`long`/`float`  | 必须       |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒 |
+| `duration`        | `int`/`long`          | 必须二选一 |        | 在当前节点滞留时间或持续时间（秒）                       |
+| `duration_ms`     | `int`/`long`          | 必须二选一 |        | 在当前节点滞留时间或持续时间（毫秒）                     |
+| `rule_id`         | `str`                 | 可选       |        | 规则ID                                                   |
+| `rule_name`       | `str`                 | 可选       |        | 规则名                                                   |
+| `no_data`         | `bool`                | 可选       |        | 是否为无数据告警                                         |
+| `action_type`     | `str`                 | 可选       |        | 动作类型                                                 |
+| `action_content`  | `JSON` / `str` (JSON) | 可选       |        | 动作数据JSON或JSON字符串                                 |
+| `alert_item_tags` | `dict`                | 可选       | `None` | 告警对象标签。键名和键值必须都为字符串                   |
+| `tags`            | `dict`                | 可选       | `None` | 额外标签。键名和键值必须都为字符串                       |
+
+`duration`和`duration_ms`两者必须填一个
+
+
+
+---
+
+
+
+###### *method* `Dataway.write_alerts(alerts)`
+
+写入多个告警
+
+|              参数             |          类型         |  是否必须  | 默认值 |                           说明                           |
+|-------------------------------|-----------------------|------------|--------|----------------------------------------------------------|
+| `alert`                       | `list`                | 必须       |        | 告警列表                                                 |
+| `alert[#]`                    | `dict`                | 必须       |        | 告警                                                     |
+| `alert[#]["level"]`           | `str`                 | 必须       |        | `"critical"` / `"warning"` / `"info"` / `"ok"`           |
+| `alert[#]["alert_id"]`        | `str`                 | 必须       |        | 告警ID                                                   |
+| `alert[#]["check_value"]`     | `JSON` / `str` (JSON) | 必须       |        | 检测值JSON或JSON字符串                                   |
+| `alert[#]["timestamp"]`       | `int`/`long`/`float`  | 必须       |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒 |
+| `alert[#]["duration"]`        | `int`/`long`          | 必须二选一 |        | 在当前节点滞留时间或持续时间（秒）                       |
+| `alert[#]["duration_ms"]`     | `int`/`long`          | 必须二选一 |        | 在当前节点滞留时间或持续时间（毫秒）                     |
+| `alert[#]["rule_id"]`         | `str`                 | 可选       |        | 规则ID                                                   |
+| `alert[#]["rule_name"]`       | `str`                 | 可选       |        | 规则名                                                   |
+| `alert[#]["no_data"]`         | `bool`                | 可选       |        | 是否为无数据告警                                         |
+| `alert[#]["action_type"]`     | `str`                 | 可选       |        | 动作类型                                                 |
+| `alert[#]["action_content"]`  | `JSON` / `str` (JSON) | 可选       |        | 动作数据JSON或JSON字符串                                 |
+| `alert[#]["alert_item_tags"]` | `dict`                | 可选       | `None` | 告警对象标签。键名和键值必须都为字符串                   |
+| `alert[#]["tags"]`            | `dict`                | 可选       | `None` | 额外标签。键名和键值必须都为字符串                       |
 
 ## 声明
 
