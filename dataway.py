@@ -61,11 +61,13 @@ def ensure_binary(s, encoding='utf-8', errors='strict'):
     elif isinstance(s, binary_type):
         return s
     else:
-        raise TypeError("not expecting type '%s'" % type(s))
+        e = TypeError("not expecting type '%s'" % type(s))
+        raise e
 
 def ensure_str(s, encoding='utf-8', errors='strict'):
     if not isinstance(s, (text_type, binary_type)):
-        raise TypeError("not expecting type '%s'" % type(s))
+        e = TypeError("not expecting type '%s'" % type(s))
+        raise e
     if PY2 and isinstance(s, text_type):
         s = s.encode(encoding, errors)
     elif PY3 and isinstance(s, binary_type):
@@ -114,7 +116,8 @@ ASSERT_TYPE_MAPS = {
 }
 def _assert_type(data, data_type, name):
     if not isinstance(data, ASSERT_TYPE_MAPS[data_type]['type']):
-        raise Exception('`{0}` {1}, got {2}'.format(name, ASSERT_TYPE_MAPS[data_type]['message'], type(data).__name__))
+        e = Exception('`{0}` {1}, got {2}'.format(name, ASSERT_TYPE_MAPS[data_type]['message'], type(data).__name__))
+        raise e
     return data
 
 def assert_dict(data, name):
@@ -128,7 +131,8 @@ def assert_int(data, name):
 
 def assert_enum(data, name, options):
     if data not in options:
-        raise Exception('`{0}` should be one of {1}, got {2}'.format(name, ','.join(options), data))
+        e = Exception('`{0}` should be one of {1}, got {2}'.format(name, ','.join(options), data))
+        raise e
     return data
 
 def assert_tags(data, name):
@@ -144,16 +148,19 @@ def assert_json_str(data, name):
         try:
             data = json.dumps(json.loads(data), ensure_ascii=False, sort_keys=True, separators=(',', ':'))
         except Exception as e:
-            raise Exception('`{0}` should be a JSON or JSON string, got {1}'.format(name, data))
+            e = Exception('`{0}` should be a JSON or JSON string, got {1}'.format(name, data))
+            raise e
 
     elif isinstance(data, (dict, OrderedDict, list, tuple)):
         try:
             data = json.dumps(data, ensure_ascii=False, sort_keys=True, separators=(',', ':'))
         except Exception as e:
-            raise Exception('`{0}` should be a JSON or JSON string. Error occured during serialization: {1}'.format(name, e))
+            e = Exception('`{0}` should be a JSON or JSON string. Error occured during serialization: {1}'.format(name, e))
+            raise e
 
     else:
-        raise Exception('`check_value` should be a JSON or JSON string')
+        e = Exception('`check_value` should be a JSON or JSON string')
+        raise e
 
     return data
 
@@ -201,7 +208,8 @@ class DataWay(object):
                     self.port = int(host_port_parts[1])
 
         if not self.token:
-            raise Exception('`token` is required')
+            e = Exception('`token` is required')
+            raise e
 
     def _convert_to_ns(self, timestamp):
         timestamp = long_type(timestamp)
@@ -399,7 +407,8 @@ class DataWay(object):
 
     def write_points(self, points):
         if not isinstance(points, (list, tuple)):
-            raise Exception('`points` should be a list or tuple, got {0}'.format(type(points).__name__))
+            e = Exception('`points` should be a list or tuple, got {0}'.format(type(points).__name__))
+            raise e
 
         prepared_points = []
         for p in points:
@@ -439,7 +448,8 @@ class DataWay(object):
             if not link.lower().startswith('http://') \
                     and not link.lower().startswith('https://') \
                     or link.endswith('://'):
-                raise Exception('`link` should be a valid URL with protocol, got {0}'.format(link))
+                e = Exception('`link` should be a valid URL with protocol, got {0}'.format(link))
+                raise e
 
             fields['$link'] = link
 
@@ -466,7 +476,8 @@ class DataWay(object):
 
     def write_keyevents(self, keyevents):
         if not isinstance(keyevents, (list, tuple)):
-            raise Exception('`keyevents` should be a list or tuple, got {0}'.format(type(keyevents).__name__))
+            e = Exception('`keyevents` should be a list or tuple, got {0}'.format(type(keyevents).__name__))
+            raise e
 
         prepared_points = []
         for p in keyevents:
@@ -514,7 +525,8 @@ class DataWay(object):
             duration = duration * 1000
 
         if duration_ms is None and duration is None:
-            raise Exception('`duration` or `duration_ms` is missing')
+            e = Exception('`duration` or `duration_ms` is missing')
+            raise e
 
         fields['$duration'] = duration_ms or duration
 
@@ -544,7 +556,8 @@ class DataWay(object):
 
     def write_flows(self, flows):
         if not isinstance(flows, (list, tuple)):
-            raise Exception('`flows` should be a list or tuple, got {0}'.format(type(flows).__name__))
+            e = Exception('`flows` should be a list or tuple, got {0}'.format(type(flows).__name__))
+            raise e
 
         prepared_points = []
         for p in flows:
@@ -606,7 +619,8 @@ class DataWay(object):
             duration = duration * 1000
 
         if duration_ms is None and duration is None:
-            raise Exception('`duration` or `duration_ms` is missing')
+            e = Exception('`duration` or `duration_ms` is missing')
+            raise e
 
         fields['$duration'] = duration_ms or duration
 
@@ -653,7 +667,8 @@ class DataWay(object):
 
     def write_alerts(self, alerts):
         if not isinstance(alerts, (list, tuple)):
-            raise Exception('`alerts` should be a list or tuple, got {0}'.format(type(alerts).__name__))
+            e = Exception('`alerts` should be a list or tuple, got {0}'.format(type(alerts).__name__))
+            raise e
 
         prepared_points = []
         for p in alerts:
