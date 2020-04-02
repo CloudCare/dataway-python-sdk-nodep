@@ -92,7 +92,7 @@ RE_ESCAPE_TAG_KEY         = re.compile('([,= ])')
 RE_ESCAPE_TAG_VALUE       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_FIELD_KEY       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_MEASUREMENT     = re.compile('([, ])')
-RE_ESCAPE_FIELD_STR_VALUE = re.compile('(["])')
+RE_ESCAPE_FIELD_STR_VALUE = re.compile('(["\\\\])')
 
 ALERT_LEVELS = ('critical', 'warning', 'info', 'ok')
 
