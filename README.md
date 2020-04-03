@@ -61,7 +61,7 @@ dw.write_points([
 
 ## API文档
 
-###### *class* `DataWay(url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False)`
+###### *class* `DataWay(url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, access_key=None, secret_key=None, debug=False)`
 
 DataWay 类
 
@@ -73,6 +73,7 @@ DataWay 类
 | `protocol`                | `str`       | 可选     | `"http"`              | DataWay 访问协议。`"http"`/`"https"`                                          |
 | `path`                    | `str`       | 可选     | `"/v1/write/metrics"` | DataWay 数据上报路径                                                          |
 | `token`                   | `str`       | 可选     | `None`                | DataFlux 工作空间上报Token                                                    |
+| `rp`                      | `str`       | 可选     | `None`                | 写入目标`retention policy`                                                    |
 | `access_key`/`secret_key` | `str`/`str` | 可选     | `None`/`None`         | DataWay 认证用 AccessKey 和 SecretKey                                         |
 | `debug`                   | `bool`      | 可选     | `False`               | 是否打印详细调试信息                                                          |
 

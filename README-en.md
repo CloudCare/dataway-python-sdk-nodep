@@ -61,7 +61,7 @@ dw.write_points([
 
 ## API Document
 
-###### *class* `DataWay(url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False)`
+###### *class* `DataWay(url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, access_key=None, secret_key=None, debug=False)`
 
 DataWay class
 
@@ -73,6 +73,7 @@ DataWay class
 | `protocol`                | `str`       | Optional | `"http"`              | DataWay protocol. `"http"`/`"https"`                                                  |
 | `path`                    | `str`       | Optional | `"/v1/write/metrics"` | DataWay report path                                                                   |
 | `token`                   | `str`       | Optional | `None`                | DataFlux Workspace Token                                                              |
+| `rp`                      | `str`       | Optional | `None`                | Target `retention policy`                                                             |
 | `access_key`/`secret_key` | `str`/`str` | Optional | `None`/`None`         | DataWay AccessKey and SecretKey for authorization                                     |
 | `debug`                   | `bool`      | Optional | `False`               | Print detailed debug info or not                                                      |
 

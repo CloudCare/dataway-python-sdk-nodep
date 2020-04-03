@@ -168,12 +168,13 @@ class DataWay(object):
     CONTENT_TYPE = 'text/plain'
     METHOD       = 'POST'
 
-    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, access_key=None, secret_key=None, debug=False):
+    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, access_key=None, secret_key=None, debug=False):
         self.host       = host or 'localhost'
         self.port       = int(port or 9528)
         self.protocol   = protocol or 'http'
         self.path       = path or '/v1/write/metrics'
         self.token      = token
+        self.rp         = rp or None
         self.access_key = access_key
         self.secret_key = secret_key
         self.debug      = debug or False
@@ -345,6 +346,9 @@ class DataWay(object):
             conn = httplib.HTTPConnection(self.host, port=self.port)
 
         url = self.path + '?token={0}'.format(self.token)
+        if self.rp:
+            url += '&rp={0}'.format(self.rp)
+
         conn.request(self.METHOD, url, body=body, headers=headers)
         resp = conn.getresponse()
 
