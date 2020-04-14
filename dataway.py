@@ -302,8 +302,6 @@ class DataWay(object):
                 key_list = sorted(fields.keys())
                 for k in key_list:
                     v = fields[k]
-                    if not v:
-                        continue
 
                     k = re.sub(RE_ESCAPE_FIELD_KEY, ESCAPE_REPLACER, k)
                     if isinstance(v, string_types):

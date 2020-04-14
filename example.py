@@ -105,7 +105,7 @@ def main():
             'rule_id'        : 'RULE-001',
             'rule_name'      : 'R1',
             'no_data'        : True,
-            'duration'       : 10,
+            'duration'       : 0,
             'check_value'    : {'M1': 90, 'M2': 90},
             'action_type'    : 'mail',
             'action_content' : {'to': 'someone@somemail.com', 'title': 'Test Alert Title', 'content': 'Test Alert Value'},
