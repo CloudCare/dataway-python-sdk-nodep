@@ -302,6 +302,8 @@ class DataWay(object):
                 key_list = sorted(fields.keys())
                 for k in key_list:
                     v = fields[k]
+                    if v is None:
+                        continue
 
                     k = re.sub(RE_ESCAPE_FIELD_KEY, ESCAPE_REPLACER, k)
                     if isinstance(v, string_types):
@@ -333,9 +335,6 @@ class DataWay(object):
 
     def _send_points(self, points):
         body = self._prepare_body(points)
-        if self.debug:
-            print('[Request Body]\n{0}'.format(ensure_str(body)))
-
         headers = self._prepare_headers(body)
 
         conn = None
@@ -347,6 +346,10 @@ class DataWay(object):
         url = self.path + '?token={0}'.format(self.token)
         if self.rp:
             url += '&rp={0}'.format(self.rp)
+
+        if self.debug:
+            print('[Request URL]\n{0}://{1}:{2}{3}'.format(ensure_str(self.protocol), ensure_str(self.host), str(self.port), ensure_str(url)))
+            print('[Request Body]\n{0}'.format(ensure_str(body)))
 
         conn.request(self.METHOD, url, body=body, headers=headers)
         resp = conn.getresponse()
