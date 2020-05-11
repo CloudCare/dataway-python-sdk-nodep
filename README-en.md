@@ -72,7 +72,7 @@ DataWay class
 | `port`                    | `int`       | Optional | `9528`                | DataWay port                                                                          |
 | `protocol`                | `str`       | Optional | `"http"`              | DataWay protocol. `"http"`/`"https"`                                                  |
 | `path`                    | `str`       | Optional | `"/v1/write/metrics"` | DataWay report path                                                                   |
-| `token`                   | `str`       | Optional | `None`                | DataFlux Workspace Token                                                              |
+| `token`                   | `str`       | Optional | `None`                | DataFlux Workspace Token. Only for OpenWay and Internal DataWay                       |
 | `rp`                      | `str`       | Optional | `None`                | Target `retention policy`                                                             |
 | `access_key`/`secret_key` | `str`/`str` | Optional | `None`/`None`         | DataWay AccessKey and SecretKey for authorization                                     |
 | `debug`                   | `bool`      | Optional | `False`               | Print detailed debug info or not                                                      |

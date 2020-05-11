@@ -209,10 +209,6 @@ class DataWay(object):
                 if len(host_port_parts) >= 2:
                     self.port = int(host_port_parts[1])
 
-        if not self.token:
-            e = Exception('`token` is required')
-            raise e
-
     def _convert_to_ns(self, timestamp):
         timestamp = long_type(timestamp)
 
@@ -343,9 +339,15 @@ class DataWay(object):
         else:
             conn = httplib.HTTPConnection(self.host, port=self.port, timeout=self.timeout)
 
-        url = self.path + '?token={0}'.format(self.token)
+        query_items = []
+        if self.token:
+            query_items.append('token={0}'.format(self.token))
         if self.rp:
-            url += '&rp={0}'.format(self.rp)
+            query_items.append('rp={0}'.format(self.rp))
+
+        url = self.path
+        if len(query_items) > 0:
+            url += '?' + '&'.join(query_items)
 
         if self.debug:
             print('[Request URL]\n{0}://{1}:{2}{3}'.format(ensure_str(self.protocol), ensure_str(self.host), str(self.port), ensure_str(url)))

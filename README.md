@@ -72,7 +72,7 @@ DataWay 类
 | `port`                    | `int`       | 可选     | `9528`                | DataWay 主机端口                                                              |
 | `protocol`                | `str`       | 可选     | `"http"`              | DataWay 访问协议。`"http"`/`"https"`                                          |
 | `path`                    | `str`       | 可选     | `"/v1/write/metrics"` | DataWay 数据上报路径                                                          |
-| `token`                   | `str`       | 可选     | `None`                | DataFlux 工作空间上报Token                                                    |
+| `token`                   | `str`       | 可选     | `None`                | DataFlux 工作空间上报Token。只有OpenWay和内部DataWay需要填写                  |
 | `rp`                      | `str`       | 可选     | `None`                | 写入目标`retention policy`                                                    |
 | `access_key`/`secret_key` | `str`/`str` | 可选     | `None`/`None`         | DataWay 认证用 AccessKey 和 SecretKey                                         |
 | `debug`                   | `bool`      | 可选     | `False`               | 是否打印详细调试信息                                                          |
