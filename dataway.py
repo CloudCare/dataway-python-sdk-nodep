@@ -94,7 +94,7 @@ RE_ESCAPE_FIELD_KEY       = RE_ESCAPE_TAG_KEY
 RE_ESCAPE_MEASUREMENT     = re.compile('([, ])')
 RE_ESCAPE_FIELD_STR_VALUE = re.compile('(["\\\\])')
 
-ALERT_LEVELS = ('critical', 'warning', 'info', 'ok')
+KEYEVENT_STATUS = ('critical', 'error', 'warning', 'info', 'ok')
 
 ASSERT_TYPE_MAPS = {
     'dict': {
@@ -432,34 +432,81 @@ class DataWay(object):
         tags = keyevent.get('tags') or {}
         assert_tags(tags, name='tags')
 
+        # Tags.$eventId
+        event_id = keyevent.get('event_id')
+        if event_id is not None:
+            tags['$eventId'] = assert_str(event_id, name='event_id')
+
         # Tags.$source
         source = keyevent.get('source')
         if source is not None:
             tags['$source'] = assert_str(source, name='source')
 
+        # Tags.$status
+        status = keyevent.get('status')
+        if status is not None:
+            tags['$status'] = assert_enum(status, name='status', options=KEYEVENT_STATUS)
+
+        # Tags.$ruleId
+        rule_id = keyevent.get('rule_id')
+        if rule_id is not None:
+            tags['$ruleId'] = assert_str(rule_id, name='rule_id')
+
+        # Tags.$ruleName
+        rule_name = keyevent.get('rule_name')
+        if rule_name is not None:
+            tags['$ruleName'] = assert_str(rule_name, name='rule_name')
+
+        # Tags.$type
+        type_ = keyevent.get('type')
+        if type_ is not None:
+            tags['$type'] = assert_str(type_, name='type')
+
+        # Tags.$alertItem_*
+        alert_item_tags = keyevent.get('alert_item_tags')
+        if alert_item_tags is not None:
+            assert_tags(alert_item_tags, name='alert_item_tags')
+
+            for k, v in alert_item_tags.items():
+                tags['$alertItem_' + k] = v
+
+        # Tags.$actionType
+        action_type = keyevent.get('action_type')
+        if action_type is not None:
+            tags['$actionType'] = assert_str(action_type, name='action_type')
+
         # Check Fields
-        fields = {}
+        fields = keyevent.get('fields') or {}
+        assert_dict(fields, name='fields')
 
         # Fields.$title
         fields['$title'] = assert_str(keyevent.get('title'), name='title')
 
-        # Fields.$des
-        des = keyevent.get('des')
-        if des is not None:
-            fields['$des'] = assert_str(des, name='des')
+        # Fields.$content
+        content = keyevent.get('content')
+        if content is not None:
+            fields['$content'] = assert_str(content, name='content')
 
-        # Fields.$link
-        link = keyevent.get('link')
-        if link is not None:
-            assert_str(link, name='link')
+        # Fields.suggestion
+        suggestion = keyevent.get('suggestion')
+        if suggestion is not None:
+            fields['$suggestion'] = assert_str(suggestion, name='suggestion')
 
-            if not link.lower().startswith('http://') \
-                    and not link.lower().startswith('https://') \
-                    or link.endswith('://'):
-                e = Exception('`link` should be a valid URL with protocol, got {0}'.format(link))
-                raise e
+        # Fields.$duration
+        duration_ms = keyevent.get('duration_ms')
+        if duration_ms is not None:
+            assert_int(duration_ms, name='duration_ms')
 
-            fields['$link'] = link
+        duration = keyevent.get('duration')
+        if duration is not None:
+            assert_int(duration, name='duration')
+
+        # to ms
+        if duration:
+            duration = duration * 1000
+
+        if duration_ms or duration:
+            fields['$duration'] = duration_ms or duration
 
         point = {
             'measurement': '$keyevent',
@@ -469,15 +516,26 @@ class DataWay(object):
         }
         return self._preapre_point(point)
 
-    def write_keyevent(self, title, timestamp,
-        des=None, link=None, source=None, tags=None):
+    def write_keyevent(self, title, timestamp, duration=None, duration_ms=None,
+        event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None,
+        alert_item_tags=None, action_type=None, content=None,
+        tags=None, fields=None):
         keyevent = {
-            'title'    : title,
-            'des'      : des,
-            'link'     : link,
-            'source'   : source,
-            'tags'     : tags,
-            'timestamp': timestamp,
+            'title'          : title,
+            'timestamp'      : timestamp,
+            'duration'       : duration,
+            'duration_ms'    : duration_ms,
+            'event_id'       : event_id,
+            'source'         : source,
+            'status'         : status,
+            'rule_id'        : rule_id,
+            'rule_name'      : rule_name,
+            'type'           : type_,
+            'alert_item_tags': alert_item_tags,
+            'action_type'    : action_type,
+            'content'        : content,
+            'tags'           : tags,
+            'fields'         : fields,
         }
         prepared_point = self._prepare_keyevent(keyevent)
         return self._send_points(prepared_point)
@@ -552,12 +610,12 @@ class DataWay(object):
             'app'        : app,
             'trace_id'   : trace_id,
             'name'       : name,
+            'timestamp'  : timestamp,
             'duration'   : duration,
             'duration_ms': duration_ms,
             'parent'     : parent,
             'fields'     : fields,
             'tags'       : tags,
-            'timestamp'  : timestamp,
         }
         prepared_point = self._prepare_flow(flow)
         return self._send_points(prepared_point)
@@ -572,117 +630,5 @@ class DataWay(object):
             prepared_points.append(self._prepare_flow(p))
 
         return self._send_points(prepared_points)
-
-    # $alert
-    def _prepare_alert(self, alert):
-        assert_dict(alert, name='alert')
-
-        # Check Tags
-        tags = alert.get('tags') or {}
-        assert_tags(tags, name='tags')
-
-        # Tags.$level
-        tags['$level'] = assert_enum(alert.get('level'), name='level', options=ALERT_LEVELS)
-
-        # Tags.$alertId
-        tags['$alertId'] = assert_str(alert.get('alert_id'), name='alert_id')
-
-        # Tags.$ruleId
-        rule_id = alert.get('rule_id')
-        if rule_id is not None:
-            tags['$ruleId'] = assert_str(rule_id, name='rule_id')
-
-        # Tags.$noData
-        no_data = alert.get('no_data')
-        if no_data:
-            tags['$noData'] = 'noData'
-
-        # Tags.$alertItem_*
-        alert_item_tags = alert.get('alert_item_tags')
-        if alert_item_tags is not None:
-            assert_tags(alert_item_tags, name='alert_item_tags')
-
-            for k, v in alert_item_tags.items():
-                tags['$alertItem_' + k] = v
-
-        # Tags.$actionType
-        action_type = alert.get('action_type')
-        if action_type is not None:
-            tags['$actionType'] = assert_str(action_type, name='action_type')
-
-        # Check Fields
-        fields = {}
-
-        # Fields.$duration
-        duration_ms = alert.get('duration_ms')
-        if duration_ms is not None:
-            assert_int(duration_ms, name='duration_ms')
-
-        duration = alert.get('duration')
-        if duration is not None:
-            assert_int(duration, name='duration')
-
-        # to ms
-        if duration:
-            duration = duration * 1000
-
-        if duration_ms is None and duration is None:
-            e = Exception('`duration` or `duration_ms` is missing')
-            raise e
-
-        fields['$duration'] = duration_ms or duration
-
-        # Fields.$checkValueJSON
-        fields['$checkValueJSON'] = assert_json_str(alert.get('check_value'), name='check_value')
-
-        # Fields.$ruleName
-        rule_name = alert.get('rule_name')
-        if rule_name is not None:
-            fields['$ruleName'] = assert_str(rule_name, name='rule_name')
-
-        # Fields.$actionContentJSON
-        action_content = alert.get('action_content')
-        if action_content is not None:
-            fields['$actionContentJSON'] = assert_json_str(action_content, name='action_content')
-
-        point = {
-            'measurement': '$alert',
-            'tags'       : tags,
-            'fields'     : fields,
-            'timestamp'  : alert.get('timestamp'),
-        }
-        return self._preapre_point(point)
-
-    def write_alert(self, level, alert_id, check_value, timestamp, duration=None, duration_ms=None,
-        rule_id=None, rule_name=None, no_data=False, action_type=None, action_content=None, alert_item_tags=None, tags=None):
-        alert = {
-            'level'          : level,
-            'alert_id'       : alert_id,
-            'rule_id'        : rule_id,
-            'rule_name'      : rule_name,
-            'no_data'        : no_data,
-            'duration'       : duration,
-            'duration_ms'    : duration_ms,
-            'check_value'    : check_value,
-            'action_type'    : action_type,
-            'action_content' : action_content,
-            'alert_item_tags': alert_item_tags,
-            'tags'           : tags,
-            'timestamp'      : timestamp,
-        }
-        prepared_point = self._prepare_alert(alert)
-        return self._send_points(prepared_point)
-
-    def write_alerts(self, alerts):
-        if not isinstance(alerts, (list, tuple)):
-            e = Exception('`alerts` should be a list or tuple, got {0}'.format(type(alerts).__name__))
-            raise e
-
-        prepared_points = []
-        for p in alerts:
-            prepared_points.append(self._prepare_alert(p))
-
-        return self._send_points(prepared_points)
-
 
 Dataway = DataWay
