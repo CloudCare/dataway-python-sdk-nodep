@@ -141,27 +141,29 @@ Write many points
 ---
 
 
-###### *method* `DataWay.write_keyevent(title, timestamp, duration=None, duration_ms=None, event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None, content=None, tags=None, fields=None)`
+###### *method* `DataWay.write_keyevent(title, timestamp, event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None, content=None, suggestion=None, duration=None, duration_ms=None, dimensions=None, tags=None, fields=None)`
 
 Write a key event
 
-|     Parameter     |         Type         |   Required  |   Default Value   |                                                 Description                                                  |
-|-------------------|----------------------|-------------|-------------------|--------------------------------------------------------------------------------------------------------------|
-| `title`           | `str`                | Required    |                   | title                                                                                                        |
-| `timestamp`       | `int`/`long`/`float` | Optional    | Current Timestamp | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
-| `duration`        | `int`/`long`         | Alternative |                   | duration of the flow on the node (second)                                                                    |
-| `duration_ms`     | `int`/`long`         | Alternative |                   | duration of the flow on the node (millisecond)                                                               |
-| `event_id`        | `str`                | Optional    | `None`            | event ID                                                                                                     |
-| `source`          | `str`                | Optional    | `None`            | source                                                                                                       |
-| `status`          | `str`                | Optional    | `None`            | one of "critical" / "error" / "warning" / "info" / "ok"                                                      |
-| `rule_id`         | `str`                | Optional    | `None`            | rule ID                                                                                                      |
-| `rule_name`       | `str`                | Optional    | `None`            | rule name                                                                                                    |
-| `type_`           | `str`                | Optional    | `None`            | type (Note: `type` as a keyword of Python, here use `type_`)                                                 |
-| `alert_item_tags` | `str`                | Optional    | `None`            | alert item extra tags. Both key and value should be a string                                                 |
-| `action_type`     | `str`                | Optional    | `None`            | action type                                                                                                  |
-| `content`         | `str`                | Optional    | `None`            | content                                                                                                      |
-| `tags`            | `dict`               | Optional    | `None`            | tags. Both key and value should be a string                                                                  |
-| `fields`          | `dict`               | Optional    | `None`            | fields. Key should be a string, value should be a string/integer/float/boolean value                         |
+|     Parameter     |         Type         | Required |   Default Value   |                                                 Description                                                  |
+|-------------------|----------------------|----------|-------------------|--------------------------------------------------------------------------------------------------------------|
+| `title`           | `str`                | Required |                   | title                                                                                                        |
+| `timestamp`       | `int`/`long`/`float` | Optional | Current Timestamp | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
+| `event_id`        | `str`                | Optional | `None`            | event ID                                                                                                     |
+| `source`          | `str`                | Optional | `None`            | source                                                                                                       |
+| `status`          | `str`                | Optional | `None`            | one of "critical" / "error" / "warning" / "info" / "ok"                                                      |
+| `rule_id`         | `str`                | Optional | `None`            | rule ID                                                                                                      |
+| `rule_name`       | `str`                | Optional | `None`            | rule name                                                                                                    |
+| `type_`           | `str`                | Optional | `None`            | type (Note: `type` as a keyword of Python, here use `type_`)                                                 |
+| `alert_item_tags` | `str`                | Optional | `None`            | alert item extra tags. Both key and value should be a string                                                 |
+| `action_type`     | `str`                | Optional | `None`            | action type                                                                                                  |
+| `content`         | `str`                | Optional | `None`            | content                                                                                                      |
+| `suggestion`      | `str`                | Optional | `None`            | suggestion                                                                                                   |
+| `duration`        | `int`/`long`         | Optional | `None`            | duration of the flow on the node (second)                                                                    |
+| `duration_ms`     | `int`/`long`         | Optional | `None`            | duration of the flow on the node (millisecond)                                                               |
+| `dimensions`      | [`str`]              | Optional | `None`            | dimensions                                                                                                   |
+| `tags`            | `dict`               | Optional | `None`            | tags. Both key and value should be a string                                                                  |
+| `fields`          | `dict`               | Optional | `None`            | fields. Key should be a string, value should be a string/integer/float/boolean value                         |
 
 
 
@@ -173,25 +175,27 @@ Write a key event
 
 Write many key events
 
-|           Parameter           |         Type         |   Required  |   Default Value   |                                                 Description                                                  |
-|-------------------------------|----------------------|-------------|-------------------|--------------------------------------------------------------------------------------------------------------|
-| `keyevents`                   | `list`               | Required    |                   | key event list                                                                                               |
-| `keyevents[#]`                | `dict`               | Required    |                   | key event data                                                                                               |
-| `keyevents[#]title`           | `str`                | Required    |                   | title                                                                                                        |
-| `keyevents[#]timestamp`       | `int`/`long`/`float` | Optional    | Current Timestamp | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
-| `keyevents[#]duration`        | `int`/`long`         | Alternative |                   | duration of the flow on the node (second)                                                                    |
-| `keyevents[#]duration_ms`     | `int`/`long`         | Alternative |                   | duration of the flow on the node (millisecond)                                                               |
-| `keyevents[#]event_id`        | `str`                | Optional    | `None`            | event ID                                                                                                     |
-| `keyevents[#]source`          | `str`                | Optional    | `None`            | source                                                                                                       |
-| `keyevents[#]status`          | `str`                | Optional    | `None`            | one of "critical" / "error" / "warning" / "info" / "ok"                                                      |
-| `keyevents[#]rule_id`         | `str`                | Optional    | `None`            | rule ID                                                                                                      |
-| `keyevents[#]rule_name`       | `str`                | Optional    | `None`            | rule name                                                                                                    |
-| `keyevents[#]type`            | `str`                | Optional    | `None`            | type                                                                                                         |
-| `keyevents[#]alert_item_tags` | `str`                | Optional    | `None`            | alert item extra tags. Both key and value should be a string                                                 |
-| `keyevents[#]action_type`     | `str`                | Optional    | `None`            | action type                                                                                                  |
-| `keyevents[#]content`         | `str`                | Optional    | `None`            | content                                                                                                      |
-| `keyevents[#]tags`            | `dict`               | Optional    | `None`            | tags. Both key and value should be a string                                                                  |
-| `keyevents[#]fields`          | `dict`               | Optional    | `None`            | fields. Key should be a string, value should be a string/integer/float/boolean value                         |
+|           Parameter           |         Type         | Required |   Default Value   |                                                 Description                                                  |
+|-------------------------------|----------------------|----------|-------------------|--------------------------------------------------------------------------------------------------------------|
+| `keyevents`                   | `list`               | Required |                   | key event list                                                                                               |
+| `keyevents[#]`                | `dict`               | Required |                   | key event data                                                                                               |
+| `keyevents[#]title`           | `str`                | Required |                   | title                                                                                                        |
+| `keyevents[#]timestamp`       | `int`/`long`/`float` | Optional | Current Timestamp | timestamp, Support second/millisecond/microsecond/nanosecond. SDK will detect and auto convert to nanosecond |
+| `keyevents[#]event_id`        | `str`                | Optional | `None`            | event ID                                                                                                     |
+| `keyevents[#]source`          | `str`                | Optional | `None`            | source                                                                                                       |
+| `keyevents[#]status`          | `str`                | Optional | `None`            | one of "critical" / "error" / "warning" / "info" / "ok"                                                      |
+| `keyevents[#]rule_id`         | `str`                | Optional | `None`            | rule ID                                                                                                      |
+| `keyevents[#]rule_name`       | `str`                | Optional | `None`            | rule name                                                                                                    |
+| `keyevents[#]type`            | `str`                | Optional | `None`            | type                                                                                                         |
+| `keyevents[#]alert_item_tags` | `str`                | Optional | `None`            | alert item extra tags. Both key and value should be a string                                                 |
+| `keyevents[#]action_type`     | `str`                | Optional | `None`            | action type                                                                                                  |
+| `keyevents[#]content`         | `str`                | Optional | `None`            | content                                                                                                      |
+| `keyevents[#]suggestion`      | `str`                | Optional | `None`            | suggestion                                                                                                   |
+| `keyevents[#]duration`        | `int`/`long`         | Optional | `None`            | duration of the flow on the node (second)                                                                    |
+| `keyevents[#]duration_ms`     | `int`/`long`         | Optional | `None`            | duration of the flow on the node (millisecond)                                                               |
+| `keyevents[#]dimensions`      | [`str`]              | Optional | `None`            | dimensions                                                                                                   |
+| `keyevents[#]tags`            | `dict`               | Optional | `None`            | tags. Both key and value should be a string                                                                  |
+| `keyevents[#]fields`          | `dict`               | Optional | `None`            | fields. Key should be a string, value should be a string/integer/float/boolean value                         |
 
 
 

@@ -101,6 +101,10 @@ ASSERT_TYPE_MAPS = {
         'type'   : (dict, OrderedDict),
         'message': 'should be a dict or OrderedDict',
     },
+    'list': {
+        'type'   : list,
+        'message': 'should be a list',
+    },
     'str': {
         'type'   : string_types,
         'message': 'should be a str or unicode',
@@ -122,6 +126,8 @@ def _assert_type(data, data_type, name):
 
 def assert_dict(data, name):
     return _assert_type(data, 'dict', name)
+def assert_list(data, name):
+    return _assert_type(data, 'list', name)
 def assert_str(data, name):
     return _assert_type(data, 'str', name)
 def assert_number(data, name):
@@ -380,14 +386,14 @@ class DataWay(object):
         measurement = assert_str(point.get('measurement'), name='measurement')
 
         tags = point.get('tags')
-        if tags is not None:
+        if tags:
             assert_dict(tags, name='tags')
             assert_tags(tags, name='tags')
 
         fields = assert_dict(point.get('fields'), name='fields')
 
         timestamp = point.get('timestamp')
-        if timestamp is not None:
+        if timestamp:
             assert_number(timestamp, name='timestamp')
         else:
             timestamp = time.time()
@@ -434,45 +440,44 @@ class DataWay(object):
 
         # Tags.$eventId
         event_id = keyevent.get('event_id')
-        if event_id is not None:
+        if event_id:
             tags['$eventId'] = assert_str(event_id, name='event_id')
 
         # Tags.$source
         source = keyevent.get('source')
-        if source is not None:
+        if source:
             tags['$source'] = assert_str(source, name='source')
 
         # Tags.$status
         status = keyevent.get('status')
-        if status is not None:
+        if status:
             tags['$status'] = assert_enum(status, name='status', options=KEYEVENT_STATUS)
 
         # Tags.$ruleId
         rule_id = keyevent.get('rule_id')
-        if rule_id is not None:
+        if rule_id:
             tags['$ruleId'] = assert_str(rule_id, name='rule_id')
 
         # Tags.$ruleName
         rule_name = keyevent.get('rule_name')
-        if rule_name is not None:
+        if rule_name:
             tags['$ruleName'] = assert_str(rule_name, name='rule_name')
 
         # Tags.$type
         type_ = keyevent.get('type')
-        if type_ is not None:
+        if type_:
             tags['$type'] = assert_str(type_, name='type')
 
-        # Tags.$alertItem_*
+        # Tags.*
         alert_item_tags = keyevent.get('alert_item_tags')
-        if alert_item_tags is not None:
+        if alert_item_tags:
             assert_tags(alert_item_tags, name='alert_item_tags')
 
-            for k, v in alert_item_tags.items():
-                tags['$alertItem_' + k] = v
+            tags.update(alert_item_tags)
 
         # Tags.$actionType
         action_type = keyevent.get('action_type')
-        if action_type is not None:
+        if action_type:
             tags['$actionType'] = assert_str(action_type, name='action_type')
 
         # Check Fields
@@ -484,21 +489,21 @@ class DataWay(object):
 
         # Fields.$content
         content = keyevent.get('content')
-        if content is not None:
+        if content:
             fields['$content'] = assert_str(content, name='content')
 
         # Fields.suggestion
         suggestion = keyevent.get('suggestion')
-        if suggestion is not None:
+        if suggestion:
             fields['$suggestion'] = assert_str(suggestion, name='suggestion')
 
         # Fields.$duration
         duration_ms = keyevent.get('duration_ms')
-        if duration_ms is not None:
+        if duration_ms:
             assert_int(duration_ms, name='duration_ms')
 
         duration = keyevent.get('duration')
-        if duration is not None:
+        if duration:
             assert_int(duration, name='duration')
 
         # to ms
@@ -508,6 +513,14 @@ class DataWay(object):
         if duration_ms or duration:
             fields['$duration'] = duration_ms or duration
 
+        # Fields.$dimensions
+        dimensions = keyevent.get('dimensions')
+        if dimensions:
+            dimensions = assert_list(keyevent.get('dimensions'), name='dimensions')
+            dimensions = sorted([ensure_str(x) if isinstance(x, text_type) else str(x) for x in dimensions])
+            dimensions = json.dumps(dimensions, ensure_ascii=False, separators=(',', ':'))
+            fields['$dimensions'] = dimensions
+
         point = {
             'measurement': '$keyevent',
             'tags'       : tags,
@@ -516,15 +529,13 @@ class DataWay(object):
         }
         return self._preapre_point(point)
 
-    def write_keyevent(self, title, timestamp, duration=None, duration_ms=None,
-        event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None,
-        alert_item_tags=None, action_type=None, content=None,
+    def write_keyevent(self, title, timestamp,
+        event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None,
+        content=None, suggestion=None, duration=None, duration_ms=None, dimensions=None,
         tags=None, fields=None):
         keyevent = {
             'title'          : title,
             'timestamp'      : timestamp,
-            'duration'       : duration,
-            'duration_ms'    : duration_ms,
             'event_id'       : event_id,
             'source'         : source,
             'status'         : status,
@@ -534,6 +545,10 @@ class DataWay(object):
             'alert_item_tags': alert_item_tags,
             'action_type'    : action_type,
             'content'        : content,
+            'suggestion'     : suggestion,
+            'duration'       : duration,
+            'duration_ms'    : duration_ms,
+            'dimensions'     : dimensions,
             'tags'           : tags,
             'fields'         : fields,
         }
@@ -570,7 +585,7 @@ class DataWay(object):
 
         # Tags.$parent
         parent = flow.get('parent')
-        if parent is not None:
+        if parent:
             tags['$parent'] = assert_str(parent, name='parent')
 
         # Check Fields
@@ -579,11 +594,11 @@ class DataWay(object):
 
         # Fields.$duration
         duration_ms = flow.get('duration_ms')
-        if duration_ms is not None:
+        if duration_ms:
             assert_int(duration_ms, name='duration_ms')
 
         duration = flow.get('duration')
-        if duration is not None:
+        if duration:
             assert_int(duration, name='duration')
 
         # to ms

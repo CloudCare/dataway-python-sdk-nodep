@@ -142,27 +142,29 @@ routes_config:
 
 
 
-###### *method* `DataWay.write_keyevent(title, timestamp, duration=None, duration_ms=None, event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None, content=None, tags=None, fields=None)`
+###### *method* `DataWay.write_keyevent(title, timestamp, event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None, content=None, suggestion=None, duration=None, duration_ms=None, dimensions=None, tags=None, fields=None)`
 
 写入关键事件
 
-|        参数       |         类型         |  是否必须  | 默认值 |                               说明                              |
-|-------------------|----------------------|------------|--------|-----------------------------------------------------------------|
-| `title`           | `str`                | 必须       |        | 标题                                                            |
-| `timestamp`       | `int`/`long`/`float` | 必须       |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
-| `duration`        | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（秒）                              |
-| `duration_ms`     | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（毫秒）                            |
-| `event_id`        | `str`                | 可选       | `None` | 事件ID                                                          |
-| `source`          | `str`                | 可选       | `None` | 来源                                                            |
-| `status`          | `str`                | 可选       | `None` | "critical" / "error" / "warning" / "info" / "ok" 之一           |
-| `rule_id`         | `str`                | 可选       | `None` | 规则ID                                                          |
-| `rule_name`       | `str`                | 可选       | `None` | 规则名称                                                        |
-| `type_`           | `str`                | 可选       | `None` | 类型（注意：由于`type`在Python中为关键字，此处取`type_`）       |
-| `alert_item_tags` | `str`                | 可选       | `None` | 告警对象标签。键名和键值必须都为字符串                          |
-| `action_type`     | `str`                | 可选       | `None` | 动作类型                                                        |
-| `content`         | `str`                | 可选       | `None` | 内容                                                            |
-| `tags`            | `dict`               | 可选       | `None` | 标签。键名和键值必须都为字符串                                  |
-| `fields`          | `dict`               | 可选       | `None` | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
+|        参数       |         类型         | 是否必须 | 默认值 |                               说明                              |
+|-------------------|----------------------|----------|--------|-----------------------------------------------------------------|
+| `title`           | `str`                | 必须     |        | 标题                                                            |
+| `timestamp`       | `int`/`long`/`float` | 必须     |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
+| `event_id`        | `str`                | 可选     | `None` | 事件ID                                                          |
+| `source`          | `str`                | 可选     | `None` | 来源                                                            |
+| `status`          | `str`                | 可选     | `None` | "critical" / "error" / "warning" / "info" / "ok" 之一           |
+| `rule_id`         | `str`                | 可选     | `None` | 规则ID                                                          |
+| `rule_name`       | `str`                | 可选     | `None` | 规则名称                                                        |
+| `type_`           | `str`                | 可选     | `None` | 类型（注意：由于`type`在Python中为关键字，此处取`type_`）       |
+| `alert_item_tags` | `str`                | 可选     | `None` | 告警对象标签。键名和键值必须都为字符串                          |
+| `action_type`     | `str`                | 可选     | `None` | 动作类型                                                        |
+| `content`         | `str`                | 可选     | `None` | 内容                                                            |
+| `suggestion`      | `str`                | 可选     | `None` | 建议                                                            |
+| `duration`        | `int`/`long`         | 可选     | `None` | 在当前节点滞留时间或持续时间（秒）                              |
+| `duration_ms`     | `int`/`long`         | 可选     | `None` | 在当前节点滞留时间或持续时间（毫秒）                            |
+| `dimensions`      | [`str`]              | 可选     | `None` | 触发维度                                                        |
+| `tags`            | `dict`               | 可选     | `None` | 标签。键名和键值必须都为字符串                                  |
+| `fields`          | `dict`               | 可选     | `None` | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
 
 
 
@@ -174,25 +176,27 @@ routes_config:
 
 写入多个关键事件
 
-|              参数             |         类型         |  是否必须  | 默认值 |                               说明                              |
-|-------------------------------|----------------------|------------|--------|-----------------------------------------------------------------|
-| `keyevents`                   | `list`               | 必须       |        | 关键事件列表                                                    |
-| `keyevents[#]`                | `dict`               | 必须       |        | 关键事件                                                        |
-| `keyevents[#]title`           | `str`                | 必须       |        | 标题                                                            |
-| `keyevents[#]timestamp`       | `int`/`long`/`float` | 必须       |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
-| `keyevents[#]duration`        | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（秒）                              |
-| `keyevents[#]duration_ms`     | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（毫秒）                            |
-| `keyevents[#]event_id`        | `str`                | 可选       | `None` | 事件ID                                                          |
-| `keyevents[#]source`          | `str`                | 可选       | `None` | 来源                                                            |
-| `keyevents[#]status`          | `str`                | 可选       | `None` | "critical" / "error" / "warning" / "info" / "ok" 之一           |
-| `keyevents[#]rule_id`         | `str`                | 可选       | `None` | 规则ID                                                          |
-| `keyevents[#]rule_name`       | `str`                | 可选       | `None` | 规则名称                                                        |
-| `keyevents[#]type`            | `str`                | 可选       | `None` | 类型                                                            |
-| `keyevents[#]alert_item_tags` | `str`                | 可选       | `None` | 告警对象标签。键名和键值必须都为字符串                          |
-| `keyevents[#]action_type`     | `str`                | 可选       | `None` | 动作类型                                                        |
-| `keyevents[#]content`         | `str`                | 可选       | `None` | 内容                                                            |
-| `keyevents[#]tags`            | `dict`               | 可选       | `None` | 标签。键名和键值必须都为字符串                                  |
-| `keyevents[#]fields`          | `dict`               | 可选       | `None` | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
+|              参数             |         类型         | 是否必须 | 默认值 |                               说明                              |
+|-------------------------------|----------------------|----------|--------|-----------------------------------------------------------------|
+| `keyevents`                   | `list`               | 必须     |        | 关键事件列表                                                    |
+| `keyevents[#]`                | `dict`               | 必须     |        | 关键事件                                                        |
+| `keyevents[#]title`           | `str`                | 必须     |        | 标题                                                            |
+| `keyevents[#]timestamp`       | `int`/`long`/`float` | 必须     |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
+| `keyevents[#]event_id`        | `str`                | 可选     | `None` | 事件ID                                                          |
+| `keyevents[#]source`          | `str`                | 可选     | `None` | 来源                                                            |
+| `keyevents[#]status`          | `str`                | 可选     | `None` | "critical" / "error" / "warning" / "info" / "ok" 之一           |
+| `keyevents[#]rule_id`         | `str`                | 可选     | `None` | 规则ID                                                          |
+| `keyevents[#]rule_name`       | `str`                | 可选     | `None` | 规则名称                                                        |
+| `keyevents[#]type`            | `str`                | 可选     | `None` | 类型                                                            |
+| `keyevents[#]alert_item_tags` | `str`                | 可选     | `None` | 告警对象标签。键名和键值必须都为字符串                          |
+| `keyevents[#]action_type`     | `str`                | 可选     | `None` | 动作类型                                                        |
+| `keyevents[#]content`         | `str`                | 可选     | `None` | 内容                                                            |
+| `keyevents[#]suggestion`      | `str`                | 可选     | `None` | 建议                                                            |
+| `keyevents[#]duration`        | `int`/`long`         | 可选     | `None` | 在当前节点滞留时间或持续时间（秒）                              |
+| `keyevents[#]duration_ms`     | `int`/`long`         | 可选     | `None` | 在当前节点滞留时间或持续时间（毫秒）                            |
+| `keyevents[#]dimensions`      | [`str`]              | 可选     | `None` | 触发维度                                                        |
+| `keyevents[#]tags`            | `dict`               | 可选     | `None` | 标签。键名和键值必须都为字符串                                  |
+| `keyevents[#]fields`          | `dict`               | 可选     | `None` | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
 
 
 
