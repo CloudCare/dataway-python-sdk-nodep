@@ -9,6 +9,12 @@ import hmac
 from hashlib import sha1, md5
 import base64
 from email.utils import formatdate
+
+try:
+    from urllib import urlencode
+except ImportError:
+    from urllib.parse import urlencode
+
 try:
     from collections import OrderedDict
 except ImportError:
@@ -171,10 +177,7 @@ def assert_json_str(data, name):
     return data
 
 class DataWay(object):
-    CONTENT_TYPE = 'text/plain'
-    METHOD       = 'POST'
-
-    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False):
+    def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False, dry_run=False):
         self.host       = host or 'localhost'
         self.port       = int(port or 9528)
         self.protocol   = protocol or 'http'
@@ -185,9 +188,12 @@ class DataWay(object):
         self.access_key = access_key
         self.secret_key = secret_key
         self.debug      = debug or False
+        self.dry_run    = dry_run or False
 
         if self.debug:
             print('[Python Version]\n{0}'.format(sys.version))
+            if self.dry_run:
+                print('[DRY RUN MODE]')
 
         if url:
             splited_url = urlsplit(url)
@@ -215,7 +221,8 @@ class DataWay(object):
                 if len(host_port_parts) >= 2:
                     self.port = int(host_port_parts[1])
 
-    def _convert_to_ns(self, timestamp):
+    def _convert_to_ns(self, timestamp=None):
+        timestamp = timestamp or time.time()
         timestamp = long_type(timestamp)
 
         for i in range(3):
@@ -243,17 +250,17 @@ class DataWay(object):
 
         return sign
 
-    def _prepare_headers(self, body):
-        headers = {
-            'Content-Type': self.CONTENT_TYPE,
-        }
+    def _prepare_auth_headers(self, method, content_type=None, body=None):
+        body = body or ''
+        content_type = content_type or ''
 
+        headers = {}
         if not self.access_key or not self.secret_key:
             return headers
 
         body_md5 = self._get_body_md5(body)
         date_str = formatdate(timeval=None, localtime=False, usegmt=True)
-        str_to_sign = '\n'.join([self.METHOD, body_md5, self.CONTENT_TYPE, date_str])
+        str_to_sign = '\n'.join([method, body_md5, self.CONTENT_TYPE, date_str])
 
         sign = self._get_sign(str_to_sign)
 
@@ -268,7 +275,7 @@ class DataWay(object):
 
         return headers
 
-    def _prepare_body(self, points):
+    def _prepare_line_protocol(self, points):
         if not isinstance(points, (list, tuple)):
             points = [points]
 
@@ -326,6 +333,7 @@ class DataWay(object):
             field_set = ' {0}'.format(','.join(field_set_list))
 
             timestamp = p.get('timestamp')
+            timestamp = self._convert_to_ns(timestamp)
             timestamp = ' {0}'.format(timestamp)
 
             lines.append('{0}{1}{2}{3}'.format(ensure_str(measurement), ensure_str(tag_set), ensure_str(field_set), ensure_str(timestamp)))
@@ -335,9 +343,8 @@ class DataWay(object):
 
         return body
 
-    def _send_points(self, points):
-        body = self._prepare_body(points)
-        headers = self._prepare_headers(body)
+    def _do_request(self, method=None, path=None, query=None, body=None, headers=None):
+        method = method or 'GET'
 
         conn = None
         if self.protocol == 'https':
@@ -345,164 +352,220 @@ class DataWay(object):
         else:
             conn = httplib.HTTPConnection(self.host, port=self.port, timeout=self.timeout)
 
-        query_items = []
-        if self.token:
-            query_items.append('token={0}'.format(self.token))
-        if self.rp:
-            query_items.append('rp={0}'.format(self.rp))
-
-        url = self.path
-        if len(query_items) > 0:
-            url += '?' + '&'.join(query_items)
+        if query:
+            path = path + '?' + urlencode(query)
 
         if self.debug:
-            print('[Request URL]\n{0}://{1}:{2}{3}'.format(ensure_str(self.protocol), ensure_str(self.host), str(self.port), ensure_str(url)))
-            print('[Request Body]\n{0}'.format(ensure_str(body)))
+            print('[Request] {0} {1}://{2}:{3}{4}'.format(method, ensure_str(self.protocol), ensure_str(self.host), str(self.port), ensure_str(path)))
+            print('[Request Headers]\n{0}'.format('\n'.join(['{0}: {1}'.format(k, v) for k, v in (headers or {}).items()]) or '<EMPTY>'))
+            if method.upper() != 'GET':
+                print('[Request Body]\n{0}'.format(ensure_str(body or '') or '<EMPTY>'))
 
-        conn.request(self.METHOD, url, body=body, headers=headers)
-        resp = conn.getresponse()
+        resp_status_code = 0
+        resp_raw_data    = None
+        resp_data        = None
+        if not self.dry_run:
+            conn.request(method, path, body=body, headers=headers)
+            resp = conn.getresponse()
 
-        resp_status_code = resp.status
-        resp_raw_data    = resp.read()
+            resp_status_code = resp.status
+            resp_raw_data    = resp.read()
 
-        resp_content_type = resp.getheader('Content-Type')
-        if isinstance(resp_content_type, string_types):
-            resp_content_type = resp_content_type.split(';')[0].strip()
+            resp_content_type = resp.getheader('Content-Type')
+            if isinstance(resp_content_type, string_types):
+                resp_content_type = resp_content_type.split(';')[0].strip()
 
-        resp_data = resp_raw_data
-        if resp_content_type == 'application/json':
-            resp_data = json.loads(ensure_str(resp_raw_data))
+            resp_data = resp_raw_data
+            if resp_content_type == 'application/json':
+                resp_data = json.loads(ensure_str(resp_raw_data))
 
-        if self.debug:
+        if self.debug and not self.dry_run:
             print('\n[Response Status Code] {0}'.format(resp_status_code))
-            print('[Response Body] {0}'.format(ensure_str(resp_raw_data)))
+            print('[Response Body] {0}'.format(ensure_str(resp_raw_data or '') or '<EMPTY>'))
 
         return resp_status_code, resp_data
 
-    # point
-    def _preapre_point(self, point):
-        assert_dict(point, name='point')
+    def _do_get(self, path, query=None, headers=None):
+        method = 'GET'
+        path   = path or self.path
 
-        measurement = assert_str(point.get('measurement'), name='measurement')
+        _auth_headers = self._prepare_auth_headers(method=method)
 
-        tags = point.get('tags')
+        headers = headers or {}
+        headers.update(_auth_headers)
+
+        return self._do_request(method=method, path=path, query=query, headers=headers)
+
+    def _do_post(self, path, body, content_type, query=None, headers=None, with_rp=False):
+        method = 'POST'
+        path   = path or self.path
+
+        query = query or {}
+        if self.token:
+            query['token'] = self.token
+        if with_rp and self.rp:
+            query['rp'] = self.rp
+
+        _auth_headers = self._prepare_auth_headers(method=method, content_type=content_type, body=body)
+
+        headers = headers or {}
+        headers.update(_auth_headers)
+        headers['Content-Type'] = content_type
+
+        return self._do_request(method=method, path=path, query=query, body=body, headers=headers)
+
+    # Low-Level API
+    def get(self, path, query=None, headers=None):
+        return self._do_get(path=path, query=query, headers=headers)
+
+    def post_line_protocol(self, points, path=None, query=None, headers=None, with_rp=False):
+        content_type = 'text/plain'
+
+        body = self._prepare_line_protocol(points)
+
+        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
+
+    def post_json(self, json_obj, path, query=None, headers=None, with_rp=False):
+        content_type = 'application/json'
+
+        body = json_obj
+        if isinstance(body, (dict, list, tuple)):
+            body = json.dumps(body, ensure_ascii=False, separators=(',', ':'))
+
+        return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
+
+    # High-Level API
+    def _preapre_metric(self, data):
+        assert_dict(data, name='data')
+
+        measurement = assert_str(data.get('measurement'), name='measurement')
+
+        tags = data.get('tags')
         if tags:
             assert_dict(tags, name='tags')
             assert_tags(tags, name='tags')
 
-        fields = assert_dict(point.get('fields'), name='fields')
+        fields = assert_dict(data.get('fields'), name='fields')
 
-        timestamp = point.get('timestamp')
+        timestamp = data.get('timestamp')
         if timestamp:
             assert_number(timestamp, name='timestamp')
-        else:
-            timestamp = time.time()
 
-        timestamp = self._convert_to_ns(timestamp)
-
-        point = {
+        prepared_data = {
             'measurement': measurement,
             'tags'       : tags   or None,
             'fields'     : fields or None,
             'timestamp'  : timestamp,
         }
-        return point
+        return prepared_data
 
-    def write_point(self, measurement, tags=None, fields=None, timestamp=None, ):
-        point = {
+    def write_metric(self, measurement, tags=None, fields=None, timestamp=None):
+        data = {
             'measurement': measurement,
             'tags'       : tags,
             'fields'     : fields,
             'timestamp'  : timestamp,
         }
-        prepared_point = self._preapre_point(point)
+        prepared_data = self._preapre_metric(data)
 
-        return self._send_points(prepared_point)
+        return self.post_line_protocol(points=prepared_data, path='/v1/write/metrics', with_rp=True)
 
-    def write_points(self, points):
-        if not isinstance(points, (list, tuple)):
-            e = Exception('`points` should be a list or tuple, got {0}'.format(type(points).__name__))
+    def write_metrics(self, data):
+        if not isinstance(data, (list, tuple)):
+            e = Exception('`data` should be a list or tuple, got {0}'.format(type(data).__name__))
             raise e
 
-        prepared_points = []
-        for p in points:
-            prepared_points.append(self._preapre_point(p))
+        prepared_data = []
+        for d in data:
+            prepared_data.append(self._preapre_metric(d))
 
-        return self._send_points(prepared_points)
+        return self.post_line_protocol(points=prepared_data, path='/v1/write/metrics', with_rp=True)
 
-    # $keyevent
-    def _prepare_keyevent(self, keyevent):
-        assert_dict(keyevent, name='keyevent')
+    def write_point(self, measurement, tags=None, fields=None, timestamp=None):
+        '''
+        Alias of self.write_metric()
+        '''
+        return self.write_metric(measurement=measurement, tags=tags, fields=fields, timestamp=timestamp)
+
+    def write_points(self, points):
+        '''
+        Alias of self.write_metrics()
+        '''
+        return self.write_metrics(data=points)
+
+    # keyevent
+    def _prepare_keyevent(self, data):
+        assert_dict(data, name='data')
 
         # Check Tags
-        tags = keyevent.get('tags') or {}
+        tags = data.get('tags') or {}
         assert_tags(tags, name='tags')
 
         # Tags.$eventId
-        event_id = keyevent.get('event_id')
+        event_id = data.get('event_id')
         if event_id:
             tags['$eventId'] = assert_str(event_id, name='event_id')
 
         # Tags.$source
-        source = keyevent.get('source')
+        source = data.get('source')
         if source:
             tags['$source'] = assert_str(source, name='source')
 
         # Tags.$status
-        status = keyevent.get('status')
+        status = data.get('status')
         if status:
             tags['$status'] = assert_enum(status, name='status', options=KEYEVENT_STATUS)
 
         # Tags.$ruleId
-        rule_id = keyevent.get('rule_id')
+        rule_id = data.get('rule_id')
         if rule_id:
             tags['$ruleId'] = assert_str(rule_id, name='rule_id')
 
         # Tags.$ruleName
-        rule_name = keyevent.get('rule_name')
+        rule_name = data.get('rule_name')
         if rule_name:
             tags['$ruleName'] = assert_str(rule_name, name='rule_name')
 
         # Tags.$type
-        type_ = keyevent.get('type')
+        type_ = data.get('type')
         if type_:
             tags['$type'] = assert_str(type_, name='type')
 
         # Tags.*
-        alert_item_tags = keyevent.get('alert_item_tags')
+        alert_item_tags = data.get('alert_item_tags')
         if alert_item_tags:
             assert_tags(alert_item_tags, name='alert_item_tags')
 
             tags.update(alert_item_tags)
 
         # Tags.$actionType
-        action_type = keyevent.get('action_type')
+        action_type = data.get('action_type')
         if action_type:
             tags['$actionType'] = assert_str(action_type, name='action_type')
 
         # Check Fields
-        fields = keyevent.get('fields') or {}
+        fields = data.get('fields') or {}
         assert_dict(fields, name='fields')
 
         # Fields.$title
-        fields['$title'] = assert_str(keyevent.get('title'), name='title')
+        fields['$title'] = assert_str(data.get('title'), name='title')
 
         # Fields.$content
-        content = keyevent.get('content')
+        content = data.get('content')
         if content:
             fields['$content'] = assert_str(content, name='content')
 
         # Fields.suggestion
-        suggestion = keyevent.get('suggestion')
+        suggestion = data.get('suggestion')
         if suggestion:
             fields['$suggestion'] = assert_str(suggestion, name='suggestion')
 
         # Fields.$duration
-        duration_ms = keyevent.get('duration_ms')
+        duration_ms = data.get('duration_ms')
         if duration_ms:
             assert_int(duration_ms, name='duration_ms')
 
-        duration = keyevent.get('duration')
+        duration = data.get('duration')
         if duration:
             assert_int(duration, name='duration')
 
@@ -514,26 +577,26 @@ class DataWay(object):
             fields['$duration'] = duration_ms or duration
 
         # Fields.$dimensions
-        dimensions = keyevent.get('dimensions')
+        dimensions = data.get('dimensions')
         if dimensions:
-            dimensions = assert_list(keyevent.get('dimensions'), name='dimensions')
+            dimensions = assert_list(data.get('dimensions'), name='dimensions')
             dimensions = sorted([ensure_str(x) if isinstance(x, text_type) else str(x) for x in dimensions])
             dimensions = json.dumps(dimensions, ensure_ascii=False, separators=(',', ':'))
             fields['$dimensions'] = dimensions
 
-        point = {
+        prepared_data = {
             'measurement': '$keyevent',
             'tags'       : tags,
             'fields'     : fields,
-            'timestamp'  : keyevent.get('timestamp'),
+            'timestamp'  : data.get('timestamp'),
         }
-        return self._preapre_point(point)
+        return self._preapre_metric(prepared_data)
 
     def write_keyevent(self, title, timestamp,
         event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None,
         content=None, suggestion=None, duration=None, duration_ms=None, dimensions=None,
         tags=None, fields=None):
-        keyevent = {
+        data = {
             'title'          : title,
             'timestamp'      : timestamp,
             'event_id'       : event_id,
@@ -552,98 +615,19 @@ class DataWay(object):
             'tags'           : tags,
             'fields'         : fields,
         }
-        prepared_point = self._prepare_keyevent(keyevent)
-        return self._send_points(prepared_point)
+        prepared_data = self._prepare_keyevent(data)
+        return self.post_line_protocol(points=prepared_data, path='/v1/keyevent')
 
-    def write_keyevents(self, keyevents):
-        if not isinstance(keyevents, (list, tuple)):
-            e = Exception('`keyevents` should be a list or tuple, got {0}'.format(type(keyevents).__name__))
+    def write_keyevents(self, data):
+        if not isinstance(data, (list, tuple)):
+            e = Exception('`data` should be a list or tuple, got {0}'.format(type(data).__name__))
             raise e
 
-        prepared_points = []
-        for p in keyevents:
-            prepared_points.append(self._prepare_keyevent(p))
+        prepared_data = []
+        for d in data:
+            prepared_data.append(self._prepare_keyevent(d))
 
-        return self._send_points(prepared_points)
+        return self.post_line_protocol(points=prepared_data, path='/v1/keyevent')
 
-    # $flow
-    def _prepare_flow(self, flow):
-        assert_dict(flow, name='flow')
-
-        # Check Tags
-        tags = flow.get('tags') or {}
-        assert_tags(tags, name='tags')
-
-        # Measurements.$flow_*
-        assert_str(flow.get('app'), name='app')
-
-        # Tags.$traceId
-        tags['$traceId'] = assert_str(flow.get('trace_id'), name='trace_id')
-
-        # Tags.$name
-        tags['$name'] = assert_str(flow.get('name'), name='name')
-
-        # Tags.$parent
-        parent = flow.get('parent')
-        if parent:
-            tags['$parent'] = assert_str(parent, name='parent')
-
-        # Check Fields
-        fields = flow.get('fields') or {}
-        assert_dict(fields, name='fields')
-
-        # Fields.$duration
-        duration_ms = flow.get('duration_ms')
-        if duration_ms:
-            assert_int(duration_ms, name='duration_ms')
-
-        duration = flow.get('duration')
-        if duration:
-            assert_int(duration, name='duration')
-
-        # to ms
-        if duration:
-            duration = duration * 1000
-
-        if duration_ms is None and duration is None:
-            e = Exception('`duration` or `duration_ms` is missing')
-            raise e
-
-        fields['$duration'] = duration_ms or duration
-
-        point = {
-            'measurement': '$flow_{0}'.format(flow['app']),
-            'tags'       : tags,
-            'fields'     : fields,
-            'timestamp'  : flow.get('timestamp'),
-        }
-        return self._preapre_point(point)
-
-    def write_flow(self, app, trace_id, name, timestamp, duration=None, duration_ms=None,
-        parent=None, fields=None, tags=None):
-        flow = {
-            'app'        : app,
-            'trace_id'   : trace_id,
-            'name'       : name,
-            'timestamp'  : timestamp,
-            'duration'   : duration,
-            'duration_ms': duration_ms,
-            'parent'     : parent,
-            'fields'     : fields,
-            'tags'       : tags,
-        }
-        prepared_point = self._prepare_flow(flow)
-        return self._send_points(prepared_point)
-
-    def write_flows(self, flows):
-        if not isinstance(flows, (list, tuple)):
-            e = Exception('`flows` should be a list or tuple, got {0}'.format(type(flows).__name__))
-            raise e
-
-        prepared_points = []
-        for p in flows:
-            prepared_points.append(self._prepare_flow(p))
-
-        return self._send_points(prepared_points)
-
+# Alias
 Dataway = DataWay

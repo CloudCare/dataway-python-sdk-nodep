@@ -2,21 +2,22 @@
 
 Python 版 DataFlux DataWay SDK。
 
-[English Version](README-en.md)
-
 ## 特性
 
-1. 兼容 Python 2.x 和 Python 3.x，在以下版本中通过测试：
-    - `2.6.9` / `2.7.15`
-    - `3.4.10` / `3.5.9` / `3.6.9` / `3.7.5` / `3.8.0`
-
-2. 兼容不同单位的时间戳：
+1. 兼容不同单位的时间戳：
     - 秒
     - 毫秒（1/1000 秒）
     - 微秒（1/1000,000 秒）
     - 纳秒（1/1000,000,000 秒）
 
-3. 关键事件（`Keyevent`）/ 流程行为（`FLow`）/ 告警（`Alert`）支持。
+2. Low-Level API 支持，包括：
+    - 发送GET请求
+    - 发送行协议POST请求
+    - 发送JSON POST请求
+
+3. High-Level API 支持，包括：
+    - 写入指标数据（`metric`/`point`）
+    - 写入关键事件数据（`keyevent`）
 
 4. DataWay 认证支持。
 
@@ -39,11 +40,11 @@ from dataway import DataWay
 
 dw = DataWay(url='http://localhost:9528/v1/write/metrics?token=xxxxxx')
 
-# 写入一个数据点
-dw.write_point(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
+# 写入指标数据
+dw.write_metric(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
 
-# 写入多个数据点
-dw.write_points([
+# 批量写入指标数据
+dw.write_metrics([
     {
         'measurement': 'M1',
         'tags'       : {'T1': 'X', 'T2': 'Y'},
@@ -61,7 +62,9 @@ dw.write_points([
 
 ## API文档
 
-###### *class* `DataWay(url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, access_key=None, secret_key=None, debug=False)`
+### 通用
+
+#### *class* `DataWay(url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, access_key=None, secret_key=None, debug=False, dry_run=False)`
 
 DataWay 类
 
@@ -76,6 +79,8 @@ DataWay 类
 | `rp`                      | `str`       | 可选     | `None`                | 写入目标`retention policy`                                                    |
 | `access_key`/`secret_key` | `str`/`str` | 可选     | `None`/`None`         | DataWay 认证用 AccessKey 和 SecretKey                                         |
 | `debug`                   | `bool`      | 可选     | `False`               | 是否打印详细调试信息                                                          |
+| `dry_run`                 | `bool`      | 可选     | `False`               | 是否仅以演习方式运行（不实际发送HTTP请求）                                    |
+
 
 以下两种初始化方式等价：
 - `DataWay(url="http://localhost:9528/v1/write/metrics?token=xxxxxx")`
@@ -102,13 +107,69 @@ routes_config:
 
 
 
+### Low-Level API
+
+#### *method* `DataWay.get(path, query=None, headers=None)`
+
+发送GET请求
+
+|    参数   |  类型  | 是否必须 | 默认值 |          说明         |
+|-----------|--------|----------|--------|-----------------------|
+| `path`    | `str`  | 必须     |        | 请求路径，如：`/ping` |
+| `query`   | `dict` | 可选     | `None` | 请求Query参数         |
+| `headers` | `dict` | 可选     | `None` | 请求Headers参数       |
+
+
+
 ---
 
 
 
-###### *method* `DataWay.write_point(measurement, tags=None, fields=None, timestamp=None)`
+#### *method* `DataWay.post_line_protocol(path, points, path=None, query=None, headers=None, with_rp=False)`
 
-写入数据点
+使用POST方式发送行协议数据
+
+|            参数            |         类型         | 是否必须 |           默认值            |                               说明                              |
+|----------------------------|----------------------|----------|-----------------------------|-----------------------------------------------------------------|
+| `points`                   | `list`               | 必须     |                             | 数据点列表                                                      |
+| `points[#]`                | `dict`               | 必须     |                             | 数据点                                                          |
+| `points[#]["measurement"]` | `str`                | 必须     |                             | 指标集名称                                                      |
+| `points[#]["tags"]`        | `dict`               | 可选     | `None`                      | 标签。键名和键值必须都为字符串                                  |
+| `points[#]["fields"]`      | `dict`               | 必须     |                             | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
+| `points[#]["timestamp"]`   | `int`/`long`/`float` | 可选     | 当前时间                    | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
+| `path`                     | `str`                | 可选     | `DataWay`实例化时指定的路径 | 请求路径，如：`/v1/keyevent`                                    |
+| `query`                    | `dict`               | 可选     | `None`                      | 请求Query参数                                                   |
+| `headers`                  | `dict`               | 可选     | `None`                      | 请求Headers参数                                                 |
+| `with_rp`                  | `bool`               | 可选     | `False`                     | 是否自动附带`rp`参数                                            |
+
+*注意：由于SDK会自动将时间戳`timestamp`转换为纳秒，因此请勿在`query`中额外指定`precision`参数*
+
+
+
+---
+
+
+
+#### *method* `DataWay.post_json(path, json_obj, path, query=None, headers=None, with_rp=False)`
+
+使用POST方式发送行协议数据
+
+|    参数    |       类型      | 是否必须 | 默认值  |            说明            |
+|------------|-----------------|----------|---------|----------------------------|
+| `json_obj` | `list` / `dict` | 必须     |         | JSON数据                   |
+| `path`     | `str`           | 必须     |         | 请求路径，如：`/v1/object` |
+| `query`    | `dict`          | 可选     | `None`  | 请求Query参数              |
+| `headers`  | `dict`          | 可选     | `None`  | 请求Headers参数            |
+| `with_rp`  | `bool`          | 可选     | `False` | 是否自动附带`rp`参数       |
+
+
+
+
+### High-Level API
+
+#### *method* `DataWay.write_metric(measurement, tags=None, fields=None, timestamp=None)`
+
+写入指标数据
 
 |      参数     |         类型         | 是否必须 |  默认值  |                               说明                              |
 |---------------|----------------------|----------|----------|-----------------------------------------------------------------|
@@ -123,18 +184,18 @@ routes_config:
 
 
 
-###### *method* `DataWay.write_points(points)`
+#### *method* `DataWay.write_metrics(data)`
 
-写入多个数据点
+批量写入指标数据
 
-|            参数            |         类型         | 是否必须 |  默认值  |                               说明                              |
-|----------------------------|----------------------|----------|----------|-----------------------------------------------------------------|
-| `points`                   | `list`               | 必须     |          | 数据点列表                                                      |
-| `points[#]`                | `dict`               | 必须     |          | 数据点                                                          |
-| `points[#]["measurement"]` | `str`                | 必须     |          | 指标集名称                                                      |
-| `points[#]["tags"]`        | `dict`               | 可选     | `None`   | 标签。键名和键值必须都为字符串                                  |
-| `points[#]["fields"]`      | `dict`               | 可选     | `None`   | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
-| `points[#]["timestamp"]`   | `int`/`long`/`float` | 可选     | 当前时间 | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
+|           参数           |         类型         | 是否必须 |  默认值  |                               说明                              |
+|--------------------------|----------------------|----------|----------|-----------------------------------------------------------------|
+| `data`                   | `list`               | 必须     |          | 数据点列表                                                      |
+| `data[#]`                | `dict`               | 必须     |          | 数据点                                                          |
+| `data[#]["measurement"]` | `str`                | 必须     |          | 指标集名称                                                      |
+| `data[#]["tags"]`        | `dict`               | 可选     | `None`   | 标签。键名和键值必须都为字符串                                  |
+| `data[#]["fields"]`      | `dict`               | 可选     | `None`   | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
+| `data[#]["timestamp"]`   | `int`/`long`/`float` | 可选     | 当前时间 | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
 
 
 
@@ -142,7 +203,27 @@ routes_config:
 
 
 
-###### *method* `DataWay.write_keyevent(title, timestamp, event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None, content=None, suggestion=None, duration=None, duration_ms=None, dimensions=None, tags=None, fields=None)`
+#### *method* `DataWay.write_point(measurement, tags=None, fields=None, timestamp=None)`
+
+「写入指标数据」方法`DataWay.write_metric(...)`的别名
+
+
+
+---
+
+
+
+#### *method* `DataWay.write_points(self, points)`
+
+「批量写入指标数据」方法`DataWay.write_metric(...)`的别名
+
+
+
+---
+
+
+
+#### *method* `DataWay.write_keyevent(title, timestamp, event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None, content=None, suggestion=None, duration=None, duration_ms=None, dimensions=None, tags=None, fields=None)`
 
 写入关键事件
 
@@ -172,79 +253,33 @@ routes_config:
 
 
 
-###### *method* `DataWay.write_keyevents(keyevents)`
+#### *method* `DataWay.write_keyevents(data)`
 
 写入多个关键事件
 
-|              参数             |         类型         | 是否必须 | 默认值 |                               说明                              |
-|-------------------------------|----------------------|----------|--------|-----------------------------------------------------------------|
-| `keyevents`                   | `list`               | 必须     |        | 关键事件列表                                                    |
-| `keyevents[#]`                | `dict`               | 必须     |        | 关键事件                                                        |
-| `keyevents[#]title`           | `str`                | 必须     |        | 标题                                                            |
-| `keyevents[#]timestamp`       | `int`/`long`/`float` | 必须     |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
-| `keyevents[#]event_id`        | `str`                | 可选     | `None` | 事件ID                                                          |
-| `keyevents[#]source`          | `str`                | 可选     | `None` | 来源                                                            |
-| `keyevents[#]status`          | `str`                | 可选     | `None` | "critical" / "error" / "warning" / "info" / "ok" 之一           |
-| `keyevents[#]rule_id`         | `str`                | 可选     | `None` | 规则ID                                                          |
-| `keyevents[#]rule_name`       | `str`                | 可选     | `None` | 规则名称                                                        |
-| `keyevents[#]type`            | `str`                | 可选     | `None` | 类型                                                            |
-| `keyevents[#]alert_item_tags` | `str`                | 可选     | `None` | 告警对象标签。键名和键值必须都为字符串                          |
-| `keyevents[#]action_type`     | `str`                | 可选     | `None` | 动作类型                                                        |
-| `keyevents[#]content`         | `str`                | 可选     | `None` | 内容                                                            |
-| `keyevents[#]suggestion`      | `str`                | 可选     | `None` | 建议                                                            |
-| `keyevents[#]duration`        | `int`/`long`         | 可选     | `None` | 在当前节点滞留时间或持续时间（秒）                              |
-| `keyevents[#]duration_ms`     | `int`/`long`         | 可选     | `None` | 在当前节点滞留时间或持续时间（毫秒）                            |
-| `keyevents[#]dimensions`      | [`str`]              | 可选     | `None` | 触发维度                                                        |
-| `keyevents[#]tags`            | `dict`               | 可选     | `None` | 标签。键名和键值必须都为字符串                                  |
-| `keyevents[#]fields`          | `dict`               | 可选     | `None` | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
+|           参数           |         类型         | 是否必须 | 默认值 |                               说明                              |
+|--------------------------|----------------------|----------|--------|-----------------------------------------------------------------|
+| `data`                   | `list`               | 必须     |        | 关键事件列表                                                    |
+| `data[#]`                | `dict`               | 必须     |        | 关键事件                                                        |
+| `data[#]title`           | `str`                | 必须     |        | 标题                                                            |
+| `data[#]timestamp`       | `int`/`long`/`float` | 必须     |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
+| `data[#]event_id`        | `str`                | 可选     | `None` | 事件ID                                                          |
+| `data[#]source`          | `str`                | 可选     | `None` | 来源                                                            |
+| `data[#]status`          | `str`                | 可选     | `None` | "critical" / "error" / "warning" / "info" / "ok" 之一           |
+| `data[#]rule_id`         | `str`                | 可选     | `None` | 规则ID                                                          |
+| `data[#]rule_name`       | `str`                | 可选     | `None` | 规则名称                                                        |
+| `data[#]type`            | `str`                | 可选     | `None` | 类型                                                            |
+| `data[#]alert_item_tags` | `str`                | 可选     | `None` | 告警对象标签。键名和键值必须都为字符串                          |
+| `data[#]action_type`     | `str`                | 可选     | `None` | 动作类型                                                        |
+| `data[#]content`         | `str`                | 可选     | `None` | 内容                                                            |
+| `data[#]suggestion`      | `str`                | 可选     | `None` | 建议                                                            |
+| `data[#]duration`        | `int`/`long`         | 可选     | `None` | 在当前节点滞留时间或持续时间（秒）                              |
+| `data[#]duration_ms`     | `int`/`long`         | 可选     | `None` | 在当前节点滞留时间或持续时间（毫秒）                            |
+| `data[#]dimensions`      | [`str`]              | 可选     | `None` | 触发维度                                                        |
+| `data[#]tags`            | `dict`               | 可选     | `None` | 标签。键名和键值必须都为字符串                                  |
+| `data[#]fields`          | `dict`               | 可选     | `None` | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
 
 
-
----
-
-
-
-###### *method* `DataWay.write_flow(app, trace_id, name, timestamp, duration=None, duration_ms=None, parent=None, fields=None, tags=None)`
-
-写入流程行为
-
-|      参数     |         类型         |  是否必须  | 默认值 |                                 说明                                |
-|---------------|----------------------|------------|--------|---------------------------------------------------------------------|
-| `app`         | `str`                | 必须       |        | 应用名                                                              |
-| `trace_id`    | `str`                | 必须       |        | 标示一个流程单的唯一ID                                              |
-| `name`        | `str`                | 必须       |        | 节点名称                                                            |
-| `timestamp`   | `int`/`long`/`float` | 必须       |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒            |
-| `duration`    | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（秒）                                  |
-| `duration_ms` | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（毫秒）                                |
-| `parent`      | `str`                | 可选       | `None` | 上一个节点的名称。第一个节点不用上报                                |
-| `tags`        | `dict`               | 可选       | `None` | 额外标签。键名和键值必须都为字符串                                  |
-| `fields`      | `dict`               | 可选       | `None` | 额外指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
-
-`duration`和`duration_ms`两者必须填一个
-
-
-
----
-
-
-
-###### *method* `DataWay.write_flows(flows)`
-
-写入多个流程行为
-
-|            参数           |         类型         |  是否必须  | 默认值 |                                 说明                                |
-|---------------------------|----------------------|------------|--------|---------------------------------------------------------------------|
-| `flows`                   | `list`               | 必须       |        | 流程行为列表                                                        |
-| `flows[#]`                | `dict`               | 必须       |        | 流程行为                                                            |
-| `flows[#]["app"]`         | `str`                | 必须       |        | 应用名                                                              |
-| `flows[#]["trace_id"]`    | `str`                | 必须       |        | 标示一个流程单的唯一ID                                              |
-| `flows[#]["name"]`        | `str`                | 必须       |        | 节点名称                                                            |
-| `flows[#]["timestamp"]`   | `int`/`long`/`float` | 必须       |        | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒            |
-| `flows[#]["duration"]`    | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（秒）                                  |
-| `flows[#]["duration_ms"]` | `int`/`long`         | 必须二选一 |        | 在当前节点滞留时间或持续时间（毫秒）                                |
-| `flows[#]["parent"]`      | `str`                | 可选       | `None` | 上一个节点的名称。第一个节点不用上报                                |
-| `flows[#]["tags"]`        | `dict`               | 可选       | `None` | 额外标签。键名和键值必须都为字符串                                  |
-| `flows[#]["fields"]`      | `dict`               | 可选       | `None` | 额外指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
 
 ## 声明
 
