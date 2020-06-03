@@ -85,7 +85,7 @@ def main():
     dw.post_line_protocol(points=points, with_rp=True)
 
     print_sep('DataWay post json')
-    dw.post_json(json_obj=objects, path='/v1/object')
+    dw.post_json(json_obj=objects, path='/v1/write/object')
 
     print_sep('DataWay write metric')
     dw.write_metric(**points[0])

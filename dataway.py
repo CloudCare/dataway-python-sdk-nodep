@@ -614,7 +614,7 @@ class DataWay(object):
             'fields'         : fields,
         }
         prepared_data = self._prepare_keyevent(data)
-        return self.post_line_protocol(points=prepared_data, path='/v1/keyevent')
+        return self.post_line_protocol(points=prepared_data, path='/v1/write/keyevent')
 
     def write_keyevents(self, data):
         if not isinstance(data, (list, tuple)):
@@ -625,7 +625,7 @@ class DataWay(object):
         for d in data:
             prepared_data.append(self._prepare_keyevent(d))
 
-        return self.post_line_protocol(points=prepared_data, path='/v1/keyevent')
+        return self.post_line_protocol(points=prepared_data, path='/v1/write/keyevent')
 
 # Alias
 Dataway = DataWay
