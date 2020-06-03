@@ -251,7 +251,7 @@ class DataWay(object):
         return sign
 
     def _prepare_auth_headers(self, method, content_type=None, body=None):
-        body = body or ''
+        body         = body         or ''
         content_type = content_type or ''
 
         headers = {}
@@ -268,10 +268,8 @@ class DataWay(object):
             print('\n[String to sign] {0}'.format(json.dumps(str_to_sign)))
             print('[Signature] {0}'.format(json.dumps(sign)))
 
-        headers.update({
-            'Date'         : date_str,
-            'Authorization': 'DWAY {0}:{1}'.format(self.access_key, sign),
-        })
+        headers['Date']          = date_str
+        headers['Authorization'] = 'DWAY {0}:{1}'.format(self.access_key, sign)
 
         return headers
 
@@ -346,12 +344,6 @@ class DataWay(object):
     def _do_request(self, method=None, path=None, query=None, body=None, headers=None):
         method = method or 'GET'
 
-        conn = None
-        if self.protocol == 'https':
-            conn = httplib.HTTPSConnection(self.host, port=self.port, timeout=self.timeout)
-        else:
-            conn = httplib.HTTPConnection(self.host, port=self.port, timeout=self.timeout)
-
         if query:
             path = path + '?' + urlencode(query)
 
@@ -365,6 +357,12 @@ class DataWay(object):
         resp_raw_data    = None
         resp_data        = None
         if not self.dry_run:
+            conn = None
+            if self.protocol == 'https':
+                conn = httplib.HTTPSConnection(self.host, port=self.port, timeout=self.timeout)
+            else:
+                conn = httplib.HTTPConnection(self.host, port=self.port, timeout=self.timeout)
+
             conn.request(method, path, body=body, headers=headers)
             resp = conn.getresponse()
 
@@ -379,9 +377,9 @@ class DataWay(object):
             if resp_content_type == 'application/json':
                 resp_data = json.loads(ensure_str(resp_raw_data))
 
-        if self.debug and not self.dry_run:
-            print('\n[Response Status Code] {0}'.format(resp_status_code))
-            print('[Response Body] {0}'.format(ensure_str(resp_raw_data or '') or '<EMPTY>'))
+            if self.debug:
+                print('\n[Response Status Code] {0}'.format(resp_status_code))
+                print('[Response Body] {0}'.format(ensure_str(resp_raw_data or '') or '<EMPTY>'))
 
         return resp_status_code, resp_data
 

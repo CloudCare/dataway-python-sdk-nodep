@@ -213,7 +213,7 @@ routes_config:
 
 
 
-#### *method* `DataWay.write_points(self, points)`
+#### *method* `DataWay.write_points(points)`
 
 「批量写入指标数据」方法`DataWay.write_metric(...)`的别名
 

@@ -65,21 +65,21 @@ def main():
     ]
 
     objects = {
-        "object":[
+        'object':[
             {
-                "$class": "objectClass",
-                "$name" : "objectName",
-                "$tags" : { "a": "b", "c": "d" }
+                '$class': 'objectClass',
+                '$name' : 'objectName',
+                '$tags' : { 'a': 'b', 'c': 'd' }
             }, {
-                "$class": "objectClass",
-                "$name" : "objectName",
-                "$tags" : { "a": "b2", "c": "d2" }
+                '$class': 'objectClass',
+                '$name' : 'objectName',
+                '$tags' : { 'a': 'b2', 'c': 'd2' }
             }
         ]
     }
 
-    print_sep('DataWay get info')
-    dw.get(path='/')
+    print_sep('DataWay ping')
+    dw.get(path='/ping')
 
     print_sep('DataWay post line protocol')
     dw.post_line_protocol(points=points, with_rp=True)
@@ -90,7 +90,7 @@ def main():
     print_sep('DataWay write metric')
     dw.write_metric(**points[0])
 
-    print_sep('DataWay write metricss')
+    print_sep('DataWay write metrics')
     dw.write_metrics(points)
 
     print_sep('DataWay write keyevent')
