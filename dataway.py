@@ -499,35 +499,35 @@ class DataWay(object):
         tags = data.get('tags') or {}
         assert_tags(tags, name='tags')
 
-        # Tags.$eventId
+        # Tags.__eventId
         event_id = data.get('event_id')
         if event_id:
-            tags['$eventId'] = assert_str(event_id, name='event_id')
+            tags['__eventId'] = assert_str(event_id, name='event_id')
 
-        # Tags.$source
+        # Tags.__source
         source = data.get('source')
         if source:
-            tags['$source'] = assert_str(source, name='source')
+            tags['__source'] = assert_str(source, name='source')
 
-        # Tags.$status
+        # Tags.__status
         status = data.get('status')
         if status:
-            tags['$status'] = assert_enum(status, name='status', options=KEYEVENT_STATUS)
+            tags['__status'] = assert_enum(status, name='status', options=KEYEVENT_STATUS)
 
-        # Tags.$ruleId
+        # Tags.__ruleId
         rule_id = data.get('rule_id')
         if rule_id:
-            tags['$ruleId'] = assert_str(rule_id, name='rule_id')
+            tags['__ruleId'] = assert_str(rule_id, name='rule_id')
 
-        # Tags.$ruleName
+        # Tags.__ruleName
         rule_name = data.get('rule_name')
         if rule_name:
-            tags['$ruleName'] = assert_str(rule_name, name='rule_name')
+            tags['__ruleName'] = assert_str(rule_name, name='rule_name')
 
-        # Tags.$type
+        # Tags.__type
         type_ = data.get('type')
         if type_:
-            tags['$type'] = assert_str(type_, name='type')
+            tags['__type'] = assert_str(type_, name='type')
 
         # Tags.*
         alert_item_tags = data.get('alert_item_tags')
@@ -536,29 +536,29 @@ class DataWay(object):
 
             tags.update(alert_item_tags)
 
-        # Tags.$actionType
+        # Tags.__actionType
         action_type = data.get('action_type')
         if action_type:
-            tags['$actionType'] = assert_str(action_type, name='action_type')
+            tags['__actionType'] = assert_str(action_type, name='action_type')
 
         # Check Fields
         fields = data.get('fields') or {}
         assert_dict(fields, name='fields')
 
-        # Fields.$title
-        fields['$title'] = assert_str(data.get('title'), name='title')
+        # Fields.__title
+        fields['__title'] = assert_str(data.get('title'), name='title')
 
-        # Fields.$content
+        # Fields.__content
         content = data.get('content')
         if content:
-            fields['$content'] = assert_str(content, name='content')
+            fields['__content'] = assert_str(content, name='content')
 
-        # Fields.suggestion
+        # Fields.__suggestion
         suggestion = data.get('suggestion')
         if suggestion:
-            fields['$suggestion'] = assert_str(suggestion, name='suggestion')
+            fields['__suggestion'] = assert_str(suggestion, name='suggestion')
 
-        # Fields.$duration
+        # Fields.__duration
         duration_ms = data.get('duration_ms')
         if duration_ms:
             assert_int(duration_ms, name='duration_ms')
@@ -572,18 +572,18 @@ class DataWay(object):
             duration = duration * 1000
 
         if duration_ms or duration:
-            fields['$duration'] = duration_ms or duration
+            fields['__duration'] = duration_ms or duration
 
-        # Fields.$dimensions
+        # Fields.__dimensions
         dimensions = data.get('dimensions')
         if dimensions:
             dimensions = assert_list(data.get('dimensions'), name='dimensions')
             dimensions = sorted([ensure_str(x) if isinstance(x, text_type) else str(x) for x in dimensions])
             dimensions = json.dumps(dimensions, ensure_ascii=False, separators=(',', ':'))
-            fields['$dimensions'] = dimensions
+            fields['__dimensions'] = dimensions
 
         prepared_data = {
-            'measurement': '$keyevent',
+            'measurement': '__keyevent',
             'tags'       : tags,
             'fields'     : fields,
             'timestamp'  : data.get('timestamp'),
