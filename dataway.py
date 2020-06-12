@@ -499,6 +499,13 @@ class DataWay(object):
         tags = data.get('tags') or {}
         assert_tags(tags, name='tags')
 
+        # Tags.*
+        alert_item_tags = data.get('alert_item_tags')
+        if alert_item_tags:
+            assert_tags(alert_item_tags, name='alert_item_tags')
+
+            tags.update(alert_item_tags)
+
         # Tags.__eventId
         event_id = data.get('event_id')
         if event_id:
@@ -528,13 +535,6 @@ class DataWay(object):
         type_ = data.get('type')
         if type_:
             tags['__type'] = assert_str(type_, name='type')
-
-        # Tags.*
-        alert_item_tags = data.get('alert_item_tags')
-        if alert_item_tags:
-            assert_tags(alert_item_tags, name='alert_item_tags')
-
-            tags.update(alert_item_tags)
 
         # Tags.__actionType
         action_type = data.get('action_type')
