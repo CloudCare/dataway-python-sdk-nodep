@@ -572,7 +572,7 @@ class DataWay(object):
             duration = duration * 1000
 
         if duration_ms or duration:
-            fields['__duration'] = duration_ms or duration
+            fields['__duration'] = (duration_ms or duration) * 1000
 
         # Fields.__dimensions
         dimensions = data.get('dimensions')
