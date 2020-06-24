@@ -176,6 +176,9 @@ def assert_json_str(data, name):
 
     return data
 
+def json_copy(j):
+    return json.loads(json.dumps(j))
+
 class DataWay(object):
     def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False, dry_run=False):
         self.host       = host or 'localhost'
@@ -419,12 +422,26 @@ class DataWay(object):
     def post_line_protocol(self, points, path=None, query=None, headers=None, with_rp=False):
         content_type = 'text/plain'
 
+        # break obj reference
+        points = json_copy(points)
+        if query:
+            query = json_copy(query)
+        if headers:
+            headers = json_copy(headers)
+
         body = self._prepare_line_protocol(points)
 
         return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
 
     def post_json(self, json_obj, path, query=None, headers=None, with_rp=False):
         content_type = 'application/json'
+
+        # break obj reference
+        json_obj = json_copy(json_obj)
+        if query:
+            query = json_copy(query)
+        if headers:
+            headers = json_copy(headers)
 
         body = json_obj
         if isinstance(body, (dict, list, tuple)):
@@ -433,7 +450,7 @@ class DataWay(object):
         return self._do_post(path=path, body=body, content_type=content_type, query=query, headers=headers, with_rp=with_rp)
 
     # High-Level API
-    def _preapre_metric(self, data):
+    def _prepare_metric(self, data):
         assert_dict(data, name='data')
 
         measurement = assert_str(data.get('measurement'), name='measurement')
@@ -464,7 +481,11 @@ class DataWay(object):
             'fields'     : fields,
             'timestamp'  : timestamp,
         }
-        prepared_data = self._preapre_metric(data)
+
+        # break obj reference
+        data = json_copy(data)
+
+        prepared_data = self._prepare_metric(data)
 
         return self.post_line_protocol(points=prepared_data, path='/v1/write/metrics', with_rp=True)
 
@@ -473,9 +494,12 @@ class DataWay(object):
             e = Exception('`data` should be a list or tuple, got {0}'.format(type(data).__name__))
             raise e
 
+        # break obj reference
+        data = json_copy(data)
+
         prepared_data = []
         for d in data:
-            prepared_data.append(self._preapre_metric(d))
+            prepared_data.append(self._prepare_metric(d))
 
         return self.post_line_protocol(points=prepared_data, path='/v1/write/metrics', with_rp=True)
 
@@ -588,7 +612,7 @@ class DataWay(object):
             'fields'     : fields,
             'timestamp'  : data.get('timestamp'),
         }
-        return self._preapre_metric(prepared_data)
+        return self._prepare_metric(prepared_data)
 
     def write_keyevent(self, title, timestamp,
         event_id=None, source=None, status=None, rule_id=None, rule_name=None, type_=None, alert_item_tags=None, action_type=None,
@@ -613,6 +637,10 @@ class DataWay(object):
             'tags'           : tags,
             'fields'         : fields,
         }
+
+        # break obj reference
+        data = json_copy(data)
+
         prepared_data = self._prepare_keyevent(data)
         return self.post_line_protocol(points=prepared_data, path='/v1/write/keyevent')
 
@@ -620,6 +648,9 @@ class DataWay(object):
         if not isinstance(data, (list, tuple)):
             e = Exception('`data` should be a list or tuple, got {0}'.format(type(data).__name__))
             raise e
+
+        # break obj reference
+        data = json_copy(data)
 
         prepared_data = []
         for d in data:
