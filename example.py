@@ -69,11 +69,11 @@ def main():
             {
                 '__class': 'objectClass',
                 '__name' : 'objectName',
-                '__tags' : { 'a': 'b', 'c': 'd' }
+                '__tags' : { 'a': 'b', 'c': 'd', '中文': '你好' }
             }, {
                 '__class': 'objectClass',
                 '__name' : 'objectName',
-                '__tags' : { 'a': 'b2', 'c': 'd2' }
+                '__tags' : { 'a': 'b2', 'c': 'd2', '中文': '你好' }
             }
         ]
     }
