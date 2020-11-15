@@ -5,10 +5,10 @@ from dataway import DataWay
 
 def print_sep(title):
     line = '-' * 10
-    print('{0} [{1}] {2}'.format(line, title, line))
+    print('\n{0} [{1}] {2}'.format(line, title, line))
 
 def main():
-    dw = DataWay(protocol='https', host='openway.dataflux.cn', port=443, token=None, rp='rp0', debug=True, dry_run=True)
+    dw = DataWay(protocol='https', host='openway.dataflux.cn', port=443, token='xxx', rp='rp0', debug=True, dry_run=False)
 
     points = [
         {
@@ -43,6 +43,7 @@ def main():
     keyevents = [
         {
             'title'    : 'T1',
+            'status'   : 'warning',
             'timestamp': 1577808000,
         }, {
             'title'          : 'T2',
@@ -64,19 +65,30 @@ def main():
         },
     ]
 
-    objects = {
-        'object':[
-            {
-                '__class': 'objectClass',
+    objects = [
+        {
+            '__class': 'objectClass',
+            '__tags' : {
                 '__name' : 'objectName',
-                '__tags' : { 'a': 'b', 'c': 'd', '中文': '你好' }
-            }, {
-                '__class': 'objectClass',
-                '__name' : 'objectName',
-                '__tags' : { 'a': 'b2', 'c': 'd2', '中文': '你好' }
+                'a': 'b',
+                'c': 'd',
+                # '中文': '你好',
             }
-        ]
-    }
+        }, {
+            '__class': 'objectClass',
+            '__tags' : {
+                '__name' : 'objectName',
+                'a': 'b2',
+                'c': 'd2',
+                # '中文': '你好'
+            }
+        }
+    ]
+
+    print_sep('Class Method')
+    line_protocol = DataWay.prepare_line_protocol(points)
+    print(type(line_protocol))
+    print(line_protocol)
 
     print_sep('DataWay ping')
     dw.get(path='/ping')
