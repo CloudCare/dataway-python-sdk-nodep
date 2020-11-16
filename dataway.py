@@ -180,16 +180,16 @@ def json_copy(j):
     return json.loads(json.dumps(j))
 
 COLORS = {
-  'black'  : [30, 39],
-  'red'    : [31, 39],
-  'green'  : [32, 39],
-  'yellow' : [33, 39],
-  'blue'   : [34, 39],
-  'magenta': [35, 39],
-  'cyan'   : [36, 39],
-  'white'  : [37, 39],
-  'gray'   : [90, 39],
-  'grey'   : [90, 39],
+    'black'  : [30, 39],
+    'red'    : [31, 39],
+    'green'  : [32, 39],
+    'yellow' : [33, 39],
+    'blue'   : [34, 39],
+    'magenta': [35, 39],
+    'cyan'   : [36, 39],
+    'white'  : [37, 39],
+    'gray'   : [90, 39],
+    'grey'   : [90, 39],
 }
 
 def colored(s, name):
@@ -201,7 +201,6 @@ def colored(s, name):
 
     else:
         raise AttributeError("Color '{}' not supported.".format(name))
-
 
 class DataWay(object):
     def __init__(self, url=None, host=None, port=None, protocol=None, path=None, token=None, rp=None, timeout=None, access_key=None, secret_key=None, debug=False, dry_run=False):

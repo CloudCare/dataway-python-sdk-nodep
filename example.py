@@ -8,7 +8,7 @@ def print_sep(title):
     print('\n{0} [{1}] {2}'.format(line, title, line))
 
 def main():
-    dw = DataWay(protocol='https', host='openway.dataflux.cn', port=443, token='xxx', rp='rp0', debug=True, dry_run=False)
+    dw = DataWay(protocol='https', host='openway.dataflux.cn', port=443, token='<TOKEN>', rp='<RP>', debug=True, dry_run=False)
 
     points = [
         {
@@ -67,21 +67,13 @@ def main():
 
     objects = [
         {
-            '__class': 'objectClass',
-            '__tags' : {
-                '__name' : 'objectName',
-                'a': 'b',
-                'c': 'd',
-                # '中文': '你好',
-            }
+            '__name'   : 'objectName_1',
+            '__class'  : 'objectClass_1',
+            '__content': 'objectContent_1',
         }, {
-            '__class': 'objectClass',
-            '__tags' : {
-                '__name' : 'objectName',
-                'a': 'b2',
-                'c': 'd2',
-                # '中文': '你好'
-            }
+            '__name'   : 'objectName_2',
+            '__class'  : 'objectClass_2',
+            '__content': 'objectContent_2',
         }
     ]
 
