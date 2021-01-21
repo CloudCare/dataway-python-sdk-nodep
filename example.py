@@ -40,43 +40,6 @@ def main():
         },
     ]
 
-    keyevents = [
-        {
-            'title'    : 'T1',
-            'status'   : 'warning',
-            'timestamp': 1577808000,
-        }, {
-            'title'          : 'T2',
-            'event_id'       : 'event-001',
-            'source'         : 'SRC1',
-            'status'         : 'info',
-            'rule_id'        : 'rule-001',
-            'rule_name'      : 'R1',
-            'type'           : 'TYPE-1',
-            'alert_item_tags': {'AT1': 'X', 'AT2': 'Y'},
-            'action_type'    : 'A1',
-            'content'        : 'C1',
-            'suggestion'     : 'SUG-1',
-            'duration'       : 10,
-            'dimensions'     : ['D-1', u'维度2', '维度3'],
-            'tags'           : {'T1': 'X', 'T2': 'Y'},
-            'fields'         : {'F1': 'A', 'F2': 'B'},
-            'timestamp'      : 1577808001,
-        },
-    ]
-
-    objects = [
-        {
-            '__name'   : 'objectName_1',
-            '__class'  : 'objectClass_1',
-            '__content': 'objectContent_1',
-        }, {
-            '__name'   : 'objectName_2',
-            '__class'  : 'objectClass_2',
-            '__content': 'objectContent_2',
-        }
-    ]
-
     print_sep('Class Method')
     line_protocol = DataWay.prepare_line_protocol(points)
     print(type(line_protocol))
@@ -87,21 +50,6 @@ def main():
 
     print_sep('DataWay post line protocol')
     dw.post_line_protocol(points=points, with_rp=True)
-
-    print_sep('DataWay post json')
-    dw.post_json(json_obj=objects, path='/v1/write/object')
-
-    print_sep('DataWay write metric')
-    dw.write_metric(**points[0])
-
-    print_sep('DataWay write metrics')
-    dw.write_metrics(points)
-
-    print_sep('DataWay write keyevent')
-    dw.write_keyevent(**keyevents[0])
-
-    print_sep('DataWay write keyevents')
-    dw.write_keyevents(keyevents)
 
 if __name__ == '__main__':
     main()
