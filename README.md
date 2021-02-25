@@ -152,7 +152,7 @@ routes_config:
 
 #### *method* `DataWay.post_json(path, json_obj, path, query=None, headers=None, with_rp=False)`
 
-使用POST方式发送行协议数据
+使用POST方式发送JSON数据
 
 |    参数    |       类型      | 是否必须 | 默认值  |            说明            |
 |------------|-----------------|----------|---------|----------------------------|
