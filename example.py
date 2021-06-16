@@ -46,10 +46,16 @@ def main():
     print(line_protocol)
 
     print_sep('DataWay ping')
-    dw.get(path='/ping')
+    try:
+        dw.get(path='/ping')
+    except Exception as e:
+        print(e)
 
     print_sep('DataWay post line protocol')
-    dw.post_line_protocol(points=points, with_rp=True)
+    try:
+        dw.post_line_protocol(points=points, with_rp=True)
+    except Exception as e:
+        print(e)
 
     bad_points = [
         {
@@ -60,7 +66,10 @@ def main():
         }
     ]
     print_sep('DataWay post line protocol with bad point')
-    dw.post_line_protocol(points=bad_points, with_rp=True)
+    try:
+        dw.post_line_protocol(points=bad_points, with_rp=True)
+    except Exception as e:
+        print(e)
 
 if __name__ == '__main__':
     main()
