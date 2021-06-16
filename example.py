@@ -51,5 +51,16 @@ def main():
     print_sep('DataWay post line protocol')
     dw.post_line_protocol(points=points, with_rp=True)
 
+    bad_points = [
+        {
+            'measurement': 'M1',
+            'tags'       : {'T': 'X'},
+            'fields'     : {'F': {}},
+            'timestamp'  : 1577808000000000001,
+        }
+    ]
+    print_sep('DataWay post line protocol with bad point')
+    dw.post_line_protocol(points=bad_points, with_rp=True)
+
 if __name__ == '__main__':
     main()
