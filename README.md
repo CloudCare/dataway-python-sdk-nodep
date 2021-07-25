@@ -150,17 +150,18 @@ routes_config:
 
 
 
-#### *method* `DataWay.post_json(path, json_obj, path, query=None, headers=None, with_rp=False)`
+#### *method* `DataWay.post_json(path, json_obj, path, method=None, query=None, headers=None, with_rp=False)`
 
 使用POST方式发送JSON数据
 
-|    参数    |       类型      | 是否必须 | 默认值  |            说明            |
-|------------|-----------------|----------|---------|----------------------------|
-| `json_obj` | `list` / `dict` | 必须     |         | JSON数据                   |
-| `path`     | `str`           | 必须     |         | 请求路径，如：`/v1/object` |
-| `query`    | `dict`          | 可选     | `None`  | 请求Query参数              |
-| `headers`  | `dict`          | 可选     | `None`  | 请求Headers参数            |
-| `with_rp`  | `bool`          | 可选     | `False` | 是否自动附带`rp`参数       |
+|    参数    |       类型      | 是否必须 |  默认值  |            说明            |
+|------------|-----------------|----------|----------|----------------------------|
+| `json_obj` | `list` / `dict` | 必须     |          | JSON数据                   |
+| `path`     | `str`           | 必须     |          | 请求路径，如：`/v1/object` |
+| `method`   | `str`           | 可选     | `"POST"` | 请求方法，如：`"PUT"`      |
+| `query`    | `dict`          | 可选     | `None`   | 请求Query参数              |
+| `headers`  | `dict`          | 可选     | `None`   | 请求Headers参数            |
+| `with_rp`  | `bool`          | 可选     | `False`  | 是否自动附带`rp`参数       |
 
 
 
