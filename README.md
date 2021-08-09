@@ -44,7 +44,7 @@ dw = DataWay(url='http://localhost:9528/v1/write/metric?token=xxxxxx')
 dw.write_metric(measurement='M1', tags={'T1': 'X'}, fields={'F1': 'A'}, timestamp=1577808001)
 
 # 批量写入指标数据
-dw.write_metrics([
+dw.write_metric_many([
     {
         'measurement': 'M1',
         'tags'       : {'T1': 'X', 'T2': 'Y'},
@@ -179,13 +179,16 @@ routes_config:
 | `fields`      | `dict`               | 可选     | `None`   | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
 | `timestamp`   | `int`/`long`/`float` | 可选     | 当前时间 | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
 
+本方法具有别名：
+- `DataWay.write_point(...)`
+
 
 
 ---
 
 
 
-#### *method* `DataWay.write_metrics(data)`
+#### *method* `DataWay.write_metric_many(data)`
 
 批量写入指标数据
 
@@ -198,25 +201,12 @@ routes_config:
 | `data[#]["fields"]`      | `dict`               | 可选     | `None`   | 指标。键名必须为字符串，键值可以为字符串/整数/浮点数/布尔值之一 |
 | `data[#]["timestamp"]`   | `int`/`long`/`float` | 可选     | 当前时间 | 时间戳，支持秒/毫秒/微秒/纳秒。SDK会判断并自动转换为纳秒        |
 
+本方法具有别名：
+- `DataWay.write_metrics(...)`
+- `DataWay.write_points(...)`
+- `DataWay.write_point_many(...)`
 
 
----
-
-
-
-#### *method* `DataWay.write_point(measurement, tags=None, fields=None, timestamp=None)`
-
-「写入指标数据」方法`DataWay.write_metric(...)`的别名
-
-
-
----
-
-
-
-#### *method* `DataWay.write_points(points)`
-
-「批量写入指标数据」方法`DataWay.write_metric(...)`的别名
 
 ## 声明
 
